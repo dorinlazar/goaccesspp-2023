@@ -362,14 +362,12 @@ static int persist_si32(GSMetric metric, const char* path, int module) {
   if (!dates || !(tn = tpl_map(fmt, &date, &key, &val)))
     return 1;
 
-  /* *INDENT-OFF* */
   HT_FOREACH_KEY(dates, date, {
     if (!(hash = (khash_t(si32)*)get_hash(module, date, metric)))
       return -1;
     kh_foreach(hash, key, val, { tpl_pack(tn, 2); });
     tpl_pack(tn, 1);
   });
-  /* *INDENT-ON* */
   close_tpl(tn, path);
 
   return 0;
@@ -460,14 +458,12 @@ static int persist_is32(GSMetric metric, const char* path, int module) {
   if (!dates || !(tn = tpl_map(fmt, &date, &key, &val)))
     return 1;
 
-  /* *INDENT-OFF* */
   HT_FOREACH_KEY(dates, date, {
     if (!(hash = (khash_t(is32)*)get_hash(module, date, metric)))
       return -1;
     kh_foreach(hash, key, val, { tpl_pack(tn, 2); });
     tpl_pack(tn, 1);
   });
-  /* *INDENT-ON* */
   close_tpl(tn, path);
 
   return 0;
@@ -543,14 +539,12 @@ static int persist_ii32(GSMetric metric, const char* path, int module) {
   if (!dates || !(tn = tpl_map(fmt, &date, &key, &val)))
     return 1;
 
-  /* *INDENT-OFF* */
   HT_FOREACH_KEY(dates, date, {
     if (!(hash = (khash_t(ii32)*)get_hash(module, date, metric)))
       return -1;
     kh_foreach(hash, key, val, { tpl_pack(tn, 2); });
     tpl_pack(tn, 1);
   });
-  /* *INDENT-ON* */
   close_tpl(tn, path);
 
   return 0;
@@ -570,14 +564,12 @@ static int persist_ii08(GSMetric metric, const char* path, int module) {
   if (!dates || !(tn = tpl_map(fmt, &date, &key, &val)))
     return 1;
 
-  /* *INDENT-OFF* */
   HT_FOREACH_KEY(dates, date, {
     if (!(hash = (khash_t(ii08)*)get_hash(module, date, metric)))
       return -1;
     kh_foreach(hash, key, val, { tpl_pack(tn, 2); });
     tpl_pack(tn, 1);
   });
-  /* *INDENT-ON* */
   close_tpl(tn, path);
 
   return 0;
@@ -626,14 +618,12 @@ static int persist_u648(GSMetric metric, const char* path, int module) {
   if (!dates || !(tn = tpl_map(fmt, &date, &key, &val)))
     return 1;
 
-  /* *INDENT-OFF* */
   HT_FOREACH_KEY(dates, date, {
     if (!(hash = (khash_t(u648)*)get_hash(module, date, metric)))
       return -1;
     kh_foreach(hash, key, val, { tpl_pack(tn, 2); });
     tpl_pack(tn, 1);
   });
-  /* *INDENT-ON* */
   close_tpl(tn, path);
 
   return 0;
@@ -682,14 +672,12 @@ static int persist_iu64(GSMetric metric, const char* path, int module) {
   if (!dates || !(tn = tpl_map(fmt, &date, &key, &val)))
     return 1;
 
-  /* *INDENT-OFF* */
   HT_FOREACH_KEY(dates, date, {
     if (!(hash = (khash_t(iu64)*)get_hash(module, date, metric)))
       return -1;
     kh_foreach(hash, key, val, { tpl_pack(tn, 2); });
     tpl_pack(tn, 1);
   });
-  /* *INDENT-ON* */
   close_tpl(tn, path);
 
   return 0;
@@ -739,14 +727,12 @@ static int persist_su64(GSMetric metric, const char* path, int module) {
   if (!dates || !(tn = tpl_map(fmt, &date, &key, &val)))
     return 1;
 
-  /* *INDENT-OFF* */
   HT_FOREACH_KEY(dates, date, {
     if (!(hash = (khash_t(su64)*)get_hash(module, date, metric)))
       return -1;
     kh_foreach(hash, key, val, { tpl_pack(tn, 2); });
     tpl_pack(tn, 1);
   });
-  /* *INDENT-ON* */
   close_tpl(tn, path);
 
   return 0;
@@ -794,7 +780,6 @@ static int persist_igsl(GSMetric metric, const char* path, int module) {
   if (!dates || !(tn = tpl_map(fmt, &date, &key, &val)))
     return 1;
 
-  /* *INDENT-OFF* */
   HT_FOREACH_KEY(dates, date, {
     if (!(hash = (khash_t(igsl)*)get_hash(module, date, metric)))
       return -1;
@@ -807,7 +792,6 @@ static int persist_igsl(GSMetric metric, const char* path, int module) {
     });
     tpl_pack(tn, 1);
   });
-  /* *INDENT-ON* */
   close_tpl(tn, path);
 
   return 0;

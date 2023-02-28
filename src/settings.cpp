@@ -19,7 +19,6 @@
 static char** nargv;
 static int nargc = 0;
 
-/* *INDENT-OFF* */
 static GEnum LOGTYPE[] = {
     {"COMBINED", COMBINED},
     {"VCOMBINED", VCOMBINED},
@@ -70,7 +69,6 @@ static const GPreConfDate dates = {
     "%f",       /* Cloud Storage (usec) */
     "%s",       /* Squid (sec) */
 };
-/* *INDENT-ON* */
 
 /* Ignore the following options */
 static const char* ignore_cmd_opts[] = {

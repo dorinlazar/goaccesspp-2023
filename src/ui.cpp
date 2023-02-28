@@ -66,7 +66,6 @@
 #include "util.h"
 #include "xmalloc.h"
 
-/* *INDENT-OFF* */
 /* Determine which metrics should be displayed per module/panel */
 static GOutput outputting[] = {
     {VISITORS, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1},
@@ -89,7 +88,6 @@ static GOutput outputting[] = {
     {MIME_TYPE, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0},
     {TLS_TYPE, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0},
 };
-/* *INDENT-ON* */
 
 /* Structure to display overall statistics */
 typedef struct Field_ {
@@ -527,7 +525,6 @@ void display_general(WINDOW* win, GHolder* h) {
 
   size_t n, i;
 
-  /* *INDENT-OFF* */
   Field fields[] = {{T_REQUESTS, get_str_processed_reqs(), colorlbl, colorval, 0},
                     {T_UNIQUE_VISITORS, get_str_visitors(), colorlbl, colorval, 0},
                     {T_UNIQUE_FILES, get_str_reqs(), colorlbl, colorval, 0},
@@ -541,7 +538,6 @@ void display_general(WINDOW* win, GHolder* h) {
                     {T_UNIQUE404, get_str_notfound_reqs(), colorlbl, colorval, 0},
                     {T_BW, get_str_bandwidth(), colorlbl, colorval, 0},
                     {T_LOG_PATH, get_str_logfile(), colorlbl, colorpth, 1}};
-  /* *INDENT-ON* */
 
   werase(win);
   render_overall_header(win, h);
@@ -752,14 +748,12 @@ GAgents* load_host_agents(const char* addr) {
 
   agents = new_gagents(items);
 
-  /* *INDENT-OFF* */
   GSLIST_FOREACH(keys, data, {
     if ((list = ht_get_host_agent_list(HOSTS, (*(uint32_t*)data)))) {
       list_foreach(list, set_agents, agents);
       list_remove_nodes(list);
     }
   });
-  /* *INDENT-ON* */
   list_remove_nodes(keys);
 
   return agents;

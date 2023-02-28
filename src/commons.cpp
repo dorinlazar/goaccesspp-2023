@@ -23,7 +23,6 @@ time_t start_proc;
 std::array<int, TOTAL_MODULES> module_list = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
                                               -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
-/* *INDENT-OFF* */
 /* String modules to enumerated modules */
 static GEnum enum_modules[] = {
     {"VISITORS", VISITORS},
@@ -46,7 +45,6 @@ static GEnum enum_modules[] = {
     {"MIME_TYPE", MIME_TYPE},
     {"TLS_TYPE", TLS_TYPE},
 };
-/* *INDENT-ON* */
 
 /* Get number of items per panel to parse.
  *

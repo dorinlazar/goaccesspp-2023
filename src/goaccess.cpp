@@ -58,7 +58,6 @@ static WINDOW *header_win, *main_win;
 
 static int main_win_height = 0;
 
-/* *INDENT-OFF* */
 static GScroll gscroll = {
     {
         {0, 0}, /* VISITORS        { scroll, offset} */
@@ -85,7 +84,6 @@ static GScroll gscroll = {
     0,          /* main dashboard scroll */
     0,          /* expanded flag */
 };
-/* *INDENT-ON* */
 
 /* Free malloc'd holder */
 static void house_keeping_holder(void) {

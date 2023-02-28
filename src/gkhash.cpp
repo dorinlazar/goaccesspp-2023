@@ -14,10 +14,8 @@
 #include "util.h"
 #include "xmalloc.h"
 
-/* *INDENT-OFF* */
 /* Hash table that holds DB instances */
 static khash_t(igdb) * ht_db = NULL;
-/* *INDENT-ON* */
 
 /* Allocate memory for a new store container GKHashStorage instance.
  *
@@ -476,7 +474,6 @@ static void del_iu64(void* h, [[maybe_unused]] uint8_t free_data) {
   }
 }
 
-/* *INDENT-OFF* */
 /* Whole application */
 const GKHashMetric app_metrics[] = {
     {{.dbm = MTRC_DATES}, MTRC_TYPE_IGKH, new_igkh_ht, NULL, NULL, 1, NULL, NULL},
@@ -547,7 +544,6 @@ GKHashMetric module_metrics[] = {
 size_t global_metrics_len = ARRAY_SIZE(global_metrics);
 size_t module_metrics_len = ARRAY_SIZE(module_metrics);
 size_t app_metrics_len = ARRAY_SIZE(app_metrics);
-/* *INDENT-ON* */
 
 /* Initialize module metrics and mallocs its hash structure */
 static void init_tables(GModule module, GKHashModule* storage) {
@@ -1671,12 +1667,10 @@ uint64_t ht_sum_bw(void) {
   if (!dates)
     return 0;
 
-  /* *INDENT-OFF* */
   HT_SUM_VAL(dates, k, {
     if ((hash = (khash_t(iu64)*)get_hash(-1, k, MTRC_CNT_BW)))
       sum += get_iu64(hash, 1);
   });
-  /* *INDENT-ON* */
 
   return sum;
 }
@@ -2179,12 +2173,10 @@ uint32_t ht_get_size_uniqmap(GModule module) {
   if (!dates)
     return 0;
 
-  /* *INDENT-OFF* */
   HT_SUM_VAL(dates, k, {
     if ((hash = (khash_t(u648)*)get_hash(module, k, MTRC_UNIQMAP)))
       sum += kh_size(hash);
   });
-  /* *INDENT-ON* */
 
   return sum;
 }

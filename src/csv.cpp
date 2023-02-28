@@ -26,7 +26,6 @@ typedef struct GPanel_ {
 
 static void print_csv_data(FILE* fp, GHolder* h, GPercTotals totals);
 
-/* *INDENT-OFF* */
 /* A function pointer for each panel */
 static GPanel paneling[] = {
     {VISITORS, print_csv_data},
@@ -49,7 +48,6 @@ static GPanel paneling[] = {
     {MIME_TYPE, print_csv_data},
     {TLS_TYPE, print_csv_data},
 };
-/* *INDENT-ON* */
 
 /* Get a panel from the GPanel structure given a module.
  *

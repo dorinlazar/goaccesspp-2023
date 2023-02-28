@@ -53,7 +53,6 @@ static void insert_method(GModule module, GKeyData* kdata, const char* data);
 static void insert_protocol(GModule module, GKeyData* kdata, const char* data);
 static void insert_agent(GModule module, GKeyData* kdata, uint32_t agent_nkey);
 
-/* *INDENT-OFF* */
 const httpmethods http_methods[] = {
     {"OPTIONS", 7},
     {"GET", 3},
@@ -355,7 +354,6 @@ static GParse paneling[] = {
         NULL,
     },
 };
-/* *INDENT-ON* */
 
 /* Initialize a new GKeyData instance */
 static void new_modulekey(GKeyData* kdata) {

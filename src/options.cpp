@@ -57,7 +57,6 @@ static char short_options[] = "f:e:p:o:l:H:M:S:b:"
 #endif
                               "acirmMhHqdsV";
 
-/* *INDENT-OFF* */
 struct option long_opts[] = {{"agent-list", no_argument, 0, 'a'},
                              {"browsers-file", required_argument, 0, 'b'},
                              {"config-dialog", no_argument, 0, 'c'},
@@ -328,7 +327,6 @@ void cmd_help(void) {
       INFO_HELP_EXAMPLES, INFO_MORE_INFO, GO_WEBSITE);
   exit(EXIT_FAILURE);
 }
-/* *INDENT-ON* */
 
 /* Push a command line option to the given array if within bounds and if it's
  * not in the array. */

@@ -14,7 +14,6 @@
 static GSLList* color_list = NULL;
 static GSLList* pair_list = NULL;
 
-/* *INDENT-OFF* */
 static GEnum CSTM_COLORS[] = {
     {"COLOR_MTRC_HITS", COLOR_MTRC_HITS},
     {"COLOR_MTRC_VISITORS", COLOR_MTRC_VISITORS},
@@ -251,8 +250,6 @@ static const char* nocolors[] = {
     "COLOR_BG                     color0:color-1",         "COLOR_DEFAULT                color0:color-1",
     "COLOR_PROGRESS               color0:color-1 reverse",
 };
-
-/* *INDENT-ON* */
 
 /* Allocate memory for color elements */
 static GColors* new_gcolors(void) {

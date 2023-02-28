@@ -224,7 +224,6 @@ static void print_html_title(FILE* fp) {
   fprintf(fp, "</title>");
 }
 
-/* *INDENT-OFF* */
 /* Output all the document head elements. */
 static void print_html_header(FILE* fp) {
   fprintf(fp,
@@ -322,7 +321,6 @@ static void print_html_footer(FILE* fp) {
   fprintf(fp, "</body>");
   fprintf(fp, "</html>");
 }
-/* *INDENT-ON* */
 
 static const GChartDef ChartDefStopper = {NULL, NULL};
 
@@ -1077,7 +1075,6 @@ static void print_json_i18n_def(FILE* fp) {
   int sp = 0;
   size_t i = 0;
 
-  /* *INDENT-OFF* */
   static const char* json_i18n[][2] = {
       {"theme", HTML_REPORT_NAV_THEME},
       {"dark_gray", HTML_REPORT_NAV_DARK_GRAY},
@@ -1112,7 +1109,6 @@ static void print_json_i18n_def(FILE* fp) {
       {"thead", T_HEAD},
       {"version", GO_VERSION},
   };
-  /* *INDENT-ON* */
 
   /* use tabs to prettify output */
   if (conf.json_pretty_print)
