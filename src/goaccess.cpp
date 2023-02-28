@@ -1,7 +1,3 @@
-#define _LARGEFILE_SOURCE
-#define _LARGEFILE64_SOURCE
-#define _FILE_OFFSET_BITS 64
-
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
