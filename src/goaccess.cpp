@@ -30,7 +30,7 @@
 
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
-#define _FILE_OFFSET_BITS    64
+#define _FILE_OFFSET_BITS 64
 
 #include <assert.h>
 #include <ctype.h>
@@ -58,9 +58,7 @@
 
 #include "gkhash.h"
 
-#ifdef HAVE_GEOLOCATION
 #include "geoip1.h"
-#endif
 
 #include "browsers.h"
 #include "csv.h"
@@ -78,24 +76,24 @@
 #include "xmalloc.h"
 
 GConf conf = {
-  .append_method = 1,
-  .append_protocol = 1,
-  .hl_header = 1,
-  .num_tests = 10,
+    .append_method = 1,
+    .append_protocol = 1,
+    .hl_header = 1,
+    .num_tests = 10,
 };
 
 /* Loading/Spinner */
-GSpinner *parsing_spinner;
+GSpinner* parsing_spinner;
 /* active reverse dns flag */
 int active_gdns = 0;
 
 /* WebSocket server - writer and reader threads */
-static GWSWriter *gwswriter;
-static GWSReader *gwsreader;
+static GWSWriter* gwswriter;
+static GWSReader* gwsreader;
 /* Dashboard data structure */
-static GDash *dash;
+static GDash* dash;
 /* Data holder structure */
-static GHolder *holder;
+static GHolder* holder;
 /* Old signal mask */
 static sigset_t oldset;
 /* Curses windows */
@@ -105,242 +103,227 @@ static int main_win_height = 0;
 
 /* *INDENT-OFF* */
 static GScroll gscroll = {
-  {
-     {0, 0}, /* VISITORS        { scroll, offset} */
-     {0, 0}, /* REQUESTS        { scroll, offset} */
-     {0, 0}, /* REQUESTS_STATIC { scroll, offset} */
-     {0, 0}, /* NOT_FOUND       { scroll, offset} */
-     {0, 0}, /* HOSTS           { scroll, offset} */
-     {0, 0}, /* OS              { scroll, offset} */
-     {0, 0}, /* BROWSERS        { scroll, offset} */
-     {0, 0}, /* VISIT_TIMES     { scroll, offset} */
-     {0, 0}, /* VIRTUAL_HOSTS   { scroll, offset} */
-     {0, 0}, /* REFERRERS       { scroll, offset} */
-     {0, 0}, /* REFERRING_SITES { scroll, offset} */
-     {0, 0}, /* KEYPHRASES      { scroll, offset} */
-     {0, 0}, /* STATUS_CODES    { scroll, offset} */
-     {0, 0}, /* REMOTE_USER     { scroll, offset} */
-     {0, 0}, /* CACHE_STATUS    { scroll, offset} */
-#ifdef HAVE_GEOLOCATION
-     {0, 0}, /* GEO_LOCATION    { scroll, offset} */
-     {0, 0}, /* ASN             { scroll, offset} */
-#endif
-     {0, 0}, /* MIME_TYPE       { scroll, offset} */
-     {0, 0}, /* TLS_TYPE        { scroll, offset} */
-  },
-  0,         /* current module */
-  0,         /* main dashboard scroll */
-  0,         /* expanded flag */
+    {
+        {0, 0}, /* VISITORS        { scroll, offset} */
+        {0, 0}, /* REQUESTS        { scroll, offset} */
+        {0, 0}, /* REQUESTS_STATIC { scroll, offset} */
+        {0, 0}, /* NOT_FOUND       { scroll, offset} */
+        {0, 0}, /* HOSTS           { scroll, offset} */
+        {0, 0}, /* OS              { scroll, offset} */
+        {0, 0}, /* BROWSERS        { scroll, offset} */
+        {0, 0}, /* VISIT_TIMES     { scroll, offset} */
+        {0, 0}, /* VIRTUAL_HOSTS   { scroll, offset} */
+        {0, 0}, /* REFERRERS       { scroll, offset} */
+        {0, 0}, /* REFERRING_SITES { scroll, offset} */
+        {0, 0}, /* KEYPHRASES      { scroll, offset} */
+        {0, 0}, /* STATUS_CODES    { scroll, offset} */
+        {0, 0}, /* REMOTE_USER     { scroll, offset} */
+        {0, 0}, /* CACHE_STATUS    { scroll, offset} */
+        {0, 0}, /* GEO_LOCATION    { scroll, offset} */
+        {0, 0}, /* ASN             { scroll, offset} */
+        {0, 0}, /* MIME_TYPE       { scroll, offset} */
+        {0, 0}, /* TLS_TYPE        { scroll, offset} */
+    },
+    0, /* current module */
+    0, /* main dashboard scroll */
+    0, /* expanded flag */
 };
 /* *INDENT-ON* */
 
 /* Free malloc'd holder */
-static void
-house_keeping_holder (void) {
+static void house_keeping_holder(void) {
   /* REVERSE DNS THREAD */
-  pthread_mutex_lock (&gdns_thread.mutex);
+  pthread_mutex_lock(&gdns_thread.mutex);
 
   /* kill dns pthread */
   active_gdns = 0;
   /* clear holder structure */
-  free_holder (&holder);
+  free_holder(&holder);
   /* clear reverse dns queue */
-  gdns_free_queue ();
+  gdns_free_queue();
   /* clear the whole storage */
-  free_storage ();
+  free_storage();
 
-  pthread_mutex_unlock (&gdns_thread.mutex);
+  pthread_mutex_unlock(&gdns_thread.mutex);
 }
 
 /* Free malloc'd data across the whole program */
-static void
-house_keeping (void) {
-  house_keeping_holder ();
+static void house_keeping(void) {
+  house_keeping_holder();
 
   /* DASHBOARD */
   if (dash && !conf.output_stdout) {
-    free_dashboard (dash);
-    reset_find ();
+    free_dashboard(dash);
+    reset_find();
   }
 
   /* GEOLOCATION */
-#ifdef HAVE_GEOLOCATION
-  geoip_free ();
-#endif
+  geoip_free();
 
   /* INVALID REQUESTS */
   if (conf.invalid_requests_log) {
-    LOG_DEBUG (("Closing invalid requests log.\n"));
-    invalid_log_close ();
+    LOG_DEBUG(("Closing invalid requests log.\n"));
+    invalid_log_close();
   }
 
   /* UNKNOWNS */
   if (conf.unknowns_log) {
-    LOG_DEBUG (("Closing unknowns log.\n"));
-    unknowns_log_close ();
+    LOG_DEBUG(("Closing unknowns log.\n"));
+    unknowns_log_close();
   }
 
   /* CONFIGURATION */
-  free_formats ();
-  free_browsers_hash ();
+  free_formats();
+  free_browsers_hash();
   if (conf.debug_log) {
-    LOG_DEBUG (("Bye.\n"));
-    dbg_log_close ();
+    LOG_DEBUG(("Bye.\n"));
+    dbg_log_close();
   }
   if (conf.fifo_in)
-    free ((char *) conf.fifo_in);
+    free((char*)conf.fifo_in);
   if (conf.fifo_out)
-    free ((char *) conf.fifo_out);
+    free((char*)conf.fifo_out);
 
   /* clear spinner */
-  free (parsing_spinner);
+  free(parsing_spinner);
   /* free colors */
-  free_color_lists ();
+  free_color_lists();
   /* free cmd arguments */
-  free_cmd_args ();
+  free_cmd_args();
   /* WebSocket writer */
-  free (gwswriter);
+  free(gwswriter);
   /* WebSocket reader */
-  free (gwsreader);
+  free(gwsreader);
 }
 
-static void
-cleanup (int ret) {
+static void cleanup(int ret) {
   /* done, restore tty modes and reset terminal into
    * non-visual mode */
   if (!conf.output_stdout)
-    endwin ();
+    endwin();
 
   if (!conf.no_progress)
-    fprintf (stdout, "Cleaning up resources...\n");
+    fprintf(stdout, "Cleaning up resources...\n");
 
   /* unable to process valid data */
   if (ret)
-    output_logerrors ();
+    output_logerrors();
 
-  house_keeping ();
+  house_keeping();
 }
 
 /* Drop permissions to the user specified. */
-static void
-drop_permissions (void) {
-  struct passwd *pw;
+static void drop_permissions(void) {
+  struct passwd* pw;
 
   errno = 0;
-  if ((pw = getpwnam (conf.username)) == NULL) {
+  if ((pw = getpwnam(conf.username)) == NULL) {
     if (errno == 0)
-      FATAL ("No such user %s", conf.username);
-    FATAL ("Unable to retrieve user %s: %s", conf.username, strerror (errno));
+      FATAL("No such user %s", conf.username);
+    FATAL("Unable to retrieve user %s: %s", conf.username, strerror(errno));
   }
 
-  if (setgroups (1, &pw->pw_gid) == -1)
-    FATAL ("setgroups: %s", strerror (errno));
-  if (setgid (pw->pw_gid) == -1)
-    FATAL ("setgid: %s", strerror (errno));
-  if (setuid (pw->pw_uid) == -1)
-    FATAL ("setuid: %s", strerror (errno));
+  if (setgroups(1, &pw->pw_gid) == -1)
+    FATAL("setgroups: %s", strerror(errno));
+  if (setgid(pw->pw_gid) == -1)
+    FATAL("setgid: %s", strerror(errno));
+  if (setuid(pw->pw_uid) == -1)
+    FATAL("setuid: %s", strerror(errno));
 }
 
 /* Open the pidfile whose name is specified in the given path and write
  * the daemonized given pid. */
-static void
-write_pid_file (const char *path, pid_t pid) {
-  FILE *pidfile;
+static void write_pid_file(const char* path, pid_t pid) {
+  FILE* pidfile;
 
   if (!path)
     return;
 
-  if ((pidfile = fopen (path, "w"))) {
-    fprintf (pidfile, "%d", pid);
-    fclose (pidfile);
+  if ((pidfile = fopen(path, "w"))) {
+    fprintf(pidfile, "%d", pid);
+    fclose(pidfile);
   } else {
-    FATAL ("Unable to open the specified pid file. %s", strerror (errno));
+    FATAL("Unable to open the specified pid file. %s", strerror(errno));
   }
 }
 
 /* Set GoAccess to run as a daemon */
-static void
-daemonize (void) {
+static void daemonize(void) {
   pid_t pid, sid;
   int fd;
 
   /* Clone ourselves to make a child */
-  pid = fork ();
+  pid = fork();
 
   if (pid < 0)
-    exit (EXIT_FAILURE);
+    exit(EXIT_FAILURE);
   if (pid > 0) {
-    write_pid_file (conf.pidfile, pid);
-    printf ("Daemonized GoAccess: %d\n", pid);
-    exit (EXIT_SUCCESS);
+    write_pid_file(conf.pidfile, pid);
+    printf("Daemonized GoAccess: %d\n", pid);
+    exit(EXIT_SUCCESS);
   }
 
-  umask (0);
+  umask(0);
   /* attempt to create our own process group */
-  sid = setsid ();
+  sid = setsid();
   if (sid < 0) {
-    LOG_DEBUG (("Unable to setsid: %s.\n", strerror (errno)));
-    exit (EXIT_FAILURE);
+    LOG_DEBUG(("Unable to setsid: %s.\n", strerror(errno)));
+    exit(EXIT_FAILURE);
   }
 
   /* set the working directory to the root directory.
    * requires the user to specify absolute paths */
-  if (chdir ("/") < 0) {
-    LOG_DEBUG (("Unable to set chdir: %s.\n", strerror (errno)));
-    exit (EXIT_FAILURE);
+  if (chdir("/") < 0) {
+    LOG_DEBUG(("Unable to set chdir: %s.\n", strerror(errno)));
+    exit(EXIT_FAILURE);
   }
 
   /* redirect fd's 0,1,2 to /dev/null */
   /* Note that the user will need to use --debug-file for log output */
-  if ((fd = open ("/dev/null", O_RDWR, 0)) == -1) {
-    LOG_DEBUG (("Unable to open /dev/null: %s.\n", strerror (errno)));
-    exit (EXIT_FAILURE);
+  if ((fd = open("/dev/null", O_RDWR, 0)) == -1) {
+    LOG_DEBUG(("Unable to open /dev/null: %s.\n", strerror(errno)));
+    exit(EXIT_FAILURE);
   }
 
-  dup2 (fd, STDIN_FILENO);
-  dup2 (fd, STDOUT_FILENO);
-  dup2 (fd, STDERR_FILENO);
+  dup2(fd, STDIN_FILENO);
+  dup2(fd, STDOUT_FILENO);
+  dup2(fd, STDERR_FILENO);
   if (fd > STDERR_FILENO) {
-    close (fd);
+    close(fd);
   }
 }
 
 /* Extract data from the given module hash structure and allocate +
  * load data from the hash table into an instance of GHolder */
-static void
-allocate_holder_by_module (GModule module) {
-  GRawData *raw_data;
+static void allocate_holder_by_module(GModule module) {
+  GRawData* raw_data;
 
   /* extract data from the corresponding hash table */
-  raw_data = parse_raw_data (module);
+  raw_data = parse_raw_data(module);
   if (!raw_data) {
-    LOG_DEBUG (("raw data is NULL for module: %d.\n", module));
+    LOG_DEBUG(("raw data is NULL for module: %d.\n", module));
     return;
   }
 
-  load_holder_data (raw_data, holder + module, module, module_sort[module]);
+  load_holder_data(raw_data, holder + module, module, module_sort[module]);
 }
 
 /* Iterate over all modules/panels and extract data from hash
  * structures and load it into an instance of GHolder */
-static void
-allocate_holder (void) {
+static void allocate_holder(void) {
   size_t idx = 0;
 
-  holder = new_gholder (TOTAL_MODULES);
-  FOREACH_MODULE (idx, module_list) {
-    allocate_holder_by_module (module_list[idx]);
-  }
+  holder = new_gholder(TOTAL_MODULES);
+  FOREACH_MODULE(idx, module_list) { allocate_holder_by_module(module_list[idx]); }
 }
 
 /* Extract data from the modules GHolder structure and load it into
  * the terminal dashboard */
-static void
-allocate_data_by_module (GModule module, int col_data) {
-  int size = 0, max_choices = get_max_choices ();
+static void allocate_data_by_module(GModule module, int col_data) {
+  int size = 0, max_choices = get_max_choices();
 
-  dash->module[module].head = module_to_head (module);
-  dash->module[module].desc = module_to_desc (module);
+  dash->module[module].head = module_to_head(module);
+  dash->module[module].desc = module_to_desc(module);
 
   size = holder[module].idx;
   if (gscroll.expanded && module == gscroll.current) {
@@ -349,8 +332,8 @@ allocate_data_by_module (GModule module, int col_data) {
     size = holder[module].idx > col_data ? col_data : holder[module].idx;
   }
 
-  dash->module[module].alloc_data = size;       /* data allocated  */
-  dash->module[module].ht_size = holder[module].ht_size;        /* hash table size */
+  dash->module[module].alloc_data = size;                /* data allocated  */
+  dash->module[module].ht_size = holder[module].ht_size; /* hash table size */
   dash->module[module].idx_data = 0;
   dash->module[module].pos_y = 0;
 
@@ -360,114 +343,107 @@ allocate_data_by_module (GModule module, int col_data) {
     dash->module[module].dash_size = DASH_COLLAPSED;
   dash->total_alloc += dash->module[module].dash_size;
 
-  pthread_mutex_lock (&gdns_thread.mutex);
-  load_data_to_dash (&holder[module], dash, module, &gscroll);
-  pthread_mutex_unlock (&gdns_thread.mutex);
+  pthread_mutex_lock(&gdns_thread.mutex);
+  load_data_to_dash(&holder[module], dash, module, &gscroll);
+  pthread_mutex_unlock(&gdns_thread.mutex);
 }
 
 /* Iterate over all modules/panels and extract data from GHolder
  * structure and load it into the terminal dashboard */
-static void
-allocate_data (void) {
+static void allocate_data(void) {
   GModule module;
-  int col_data = get_num_collapsed_data_rows ();
+  int col_data = get_num_collapsed_data_rows();
   size_t idx = 0;
 
-  dash = new_gdash ();
-  FOREACH_MODULE (idx, module_list) {
+  dash = new_gdash();
+  FOREACH_MODULE(idx, module_list) {
     module = module_list[idx];
-    allocate_data_by_module (module, col_data);
+    allocate_data_by_module(module, col_data);
   }
 }
 
-static void
-clean_stdscrn (void) {
+static void clean_stdscrn(void) {
   int row, col;
 
-  getmaxyx (stdscr, row, col);
-  draw_header (stdscr, "", "%s", row - 1, 0, col, color_default);
+  getmaxyx(stdscr, row, col);
+  draw_header(stdscr, "", "%s", row - 1, 0, col, color_default);
 }
 
 /* A wrapper to render all windows within the dashboard. */
-static void
-render_screens (uint32_t offset) {
-  GColors *color = get_color (COLOR_DEFAULT);
+static void render_screens(uint32_t offset) {
+  GColors* color = get_color(COLOR_DEFAULT);
   int row, col;
   char time_str_buf[32];
 
-  getmaxyx (stdscr, row, col);
-  term_size (main_win, &main_win_height);
+  getmaxyx(stdscr, row, col);
+  term_size(main_win, &main_win_height);
 
-  generate_time ();
-  strftime (time_str_buf, sizeof (time_str_buf), "%d/%b/%Y:%T", &now_tm);
+  generate_time();
+  strftime(time_str_buf, sizeof(time_str_buf), "%d/%b/%Y:%T", &now_tm);
 
-  draw_header (stdscr, "", "%s", row - 1, 0, col, color_default);
+  draw_header(stdscr, "", "%s", row - 1, 0, col, color_default);
 
-  wattron (stdscr, color->attr | COLOR_PAIR (color->pair->idx));
-  mvaddstr (row - 1, 1, T_HELP_ENTER);
-  mvprintw (row - 1, col / 2 - 10, "%" PRIu32 "/r - %s", offset, time_str_buf);
-  mvaddstr (row - 1, col - 6 - strlen (T_QUIT), T_QUIT);
-  mvprintw (row - 1, col - 5, "%s", GO_VERSION);
-  wattroff (stdscr, color->attr | COLOR_PAIR (color->pair->idx));
+  wattron(stdscr, color->attr | COLOR_PAIR(color->pair->idx));
+  mvaddstr(row - 1, 1, T_HELP_ENTER);
+  mvprintw(row - 1, col / 2 - 10, "%" PRIu32 "/r - %s", offset, time_str_buf);
+  mvaddstr(row - 1, col - 6 - strlen(T_QUIT), T_QUIT);
+  mvprintw(row - 1, col - 5, "%s", GO_VERSION);
+  wattroff(stdscr, color->attr | COLOR_PAIR(color->pair->idx));
 
-  refresh ();
+  refresh();
 
   /* call general stats header */
-  display_general (header_win, holder);
-  wrefresh (header_win);
+  display_general(header_win, holder);
+  wrefresh(header_win);
 
   /* display active label based on current module */
-  update_active_module (header_win, gscroll.current);
+  update_active_module(header_win, gscroll.current);
 
-  display_content (main_win, dash, &gscroll);
+  display_content(main_win, dash, &gscroll);
 }
 
 /* Collapse the current expanded module */
-static int
-collapse_current_module (void) {
+static int collapse_current_module(void) {
   if (!gscroll.expanded)
     return 1;
 
   gscroll.expanded = 0;
-  reset_scroll_offsets (&gscroll);
-  free_dashboard (dash);
-  allocate_data ();
+  reset_scroll_offsets(&gscroll);
+  free_dashboard(dash);
+  allocate_data();
 
   return 0;
 }
 
 /* Display message a the bottom of the terminal dashboard that panel
  * is disabled */
-static void
-disabled_panel_msg (GModule module) {
-  const char *lbl = module_to_label (module);
+static void disabled_panel_msg(GModule module) {
+  const char* lbl = module_to_label(module);
   int row, col;
 
-  getmaxyx (stdscr, row, col);
-  draw_header (stdscr, lbl, ERR_PANEL_DISABLED, row - 1, 0, col, color_error);
+  getmaxyx(stdscr, row, col);
+  draw_header(stdscr, lbl, ERR_PANEL_DISABLED, row - 1, 0, col, color_error);
 }
 
 /* Set the current module/panel */
-static int
-set_module_to (GScroll * scrll, GModule module) {
-  if (get_module_index (module) == -1) {
-    disabled_panel_msg (module);
+static int set_module_to(GScroll* scrll, GModule module) {
+  if (get_module_index(module) == -1) {
+    disabled_panel_msg(module);
     return 1;
   }
 
   /* scroll to panel */
   if (!conf.no_tab_scroll)
-    gscroll.dash = get_module_index (module) * DASH_COLLAPSED;
+    gscroll.dash = get_module_index(module) * DASH_COLLAPSED;
 
   /* reset expanded module */
-  collapse_current_module ();
+  collapse_current_module();
   scrll->current = module;
   return 0;
 }
 
 /* Scroll expanded module or terminal dashboard to the top */
-static void
-scroll_to_first_line (void) {
+static void scroll_to_first_line(void) {
   if (!gscroll.expanded)
     gscroll.dash = 0;
   else {
@@ -477,9 +453,8 @@ scroll_to_first_line (void) {
 }
 
 /* Scroll expanded module or terminal dashboard to the last row */
-static void
-scroll_to_last_line (void) {
-  int exp_size = get_num_expanded_data_rows ();
+static void scroll_to_last_line(void) {
+  int exp_size = get_num_expanded_data_rows();
   int scrll = 0, offset = 0;
 
   if (!gscroll.expanded)
@@ -494,26 +469,24 @@ scroll_to_last_line (void) {
 }
 
 /* Load the user-agent window given the selected IP */
-static void
-load_ip_agent_list (void) {
+static void load_ip_agent_list(void) {
   int type_ip = 0;
   /* make sure we have a valid IP */
   int sel = gscroll.module[gscroll.current].scroll;
-  GDashData item = { 0 };
+  GDashData item = {0};
 
   if (dash->module[HOSTS].holder_size == 0)
     return;
 
   item = dash->module[HOSTS].data[sel];
-  if (!invalid_ipaddr (item.metrics->data, &type_ip))
-    load_agent_list (main_win, item.metrics->data);
+  if (!invalid_ipaddr(item.metrics->data, &type_ip))
+    load_agent_list(main_win, item.metrics->data);
 }
 
 /* Expand the selected module */
-static void
-expand_current_module (void) {
+static void expand_current_module(void) {
   if (gscroll.expanded && gscroll.current == HOSTS) {
-    load_ip_agent_list ();
+    load_ip_agent_list();
     return;
   }
 
@@ -521,55 +494,52 @@ expand_current_module (void) {
   if (gscroll.expanded)
     return;
 
-  reset_scroll_offsets (&gscroll);
+  reset_scroll_offsets(&gscroll);
   gscroll.expanded = 1;
 
-  free_holder_by_module (&holder, gscroll.current);
-  free_dashboard (dash);
-  allocate_holder_by_module (gscroll.current);
-  allocate_data ();
+  free_holder_by_module(&holder, gscroll.current);
+  free_dashboard(dash);
+  allocate_holder_by_module(gscroll.current);
+  allocate_data();
 }
 
 /* Expand the clicked module/panel given the Y event coordinate. */
-static int
-expand_module_from_ypos (int y) {
+static int expand_module_from_ypos(int y) {
   /* ignore header/footer clicks */
   if (y < MAX_HEIGHT_HEADER || y == LINES - 1)
     return 1;
 
-  if (set_module_from_mouse_event (&gscroll, dash, y))
+  if (set_module_from_mouse_event(&gscroll, dash, y))
     return 1;
 
-  reset_scroll_offsets (&gscroll);
+  reset_scroll_offsets(&gscroll);
   gscroll.expanded = 1;
 
-  free_holder_by_module (&holder, gscroll.current);
-  free_dashboard (dash);
-  allocate_holder_by_module (gscroll.current);
-  allocate_data ();
+  free_holder_by_module(&holder, gscroll.current);
+  free_dashboard(dash);
+  allocate_holder_by_module(gscroll.current);
+  allocate_data();
 
   return 0;
 }
 
 /* Expand the clicked module/panel */
-static int
-expand_on_mouse_click (void) {
+static int expand_on_mouse_click(void) {
   int ok_mouse;
   MEVENT event;
 
-  ok_mouse = getmouse (&event);
+  ok_mouse = getmouse(&event);
   if (!conf.mouse_support || ok_mouse != OK)
     return 1;
 
   if (event.bstate & BUTTON1_CLICKED)
-    return expand_module_from_ypos (event.y);
+    return expand_module_from_ypos(event.y);
   return 1;
 }
 
 /* Scroll dowm expanded module to the last row */
-static void
-scroll_down_expanded_module (void) {
-  int exp_size = get_num_expanded_data_rows ();
+static void scroll_down_expanded_module(void) {
+  int exp_size = get_num_expanded_data_rows();
   int *scroll_ptr, *offset_ptr;
 
   scroll_ptr = &gscroll.module[gscroll.current].scroll;
@@ -585,8 +555,7 @@ scroll_down_expanded_module (void) {
 }
 
 /* Scroll up expanded module */
-static void
-scroll_up_expanded_module (void) {
+static void scroll_up_expanded_module(void) {
   int *scroll_ptr, *offset_ptr;
 
   scroll_ptr = &gscroll.module[gscroll.current].scroll;
@@ -602,15 +571,11 @@ scroll_up_expanded_module (void) {
 }
 
 /* Scroll up terminal dashboard */
-static void
-scroll_up_dashboard (void) {
-  gscroll.dash--;
-}
+static void scroll_up_dashboard(void) { gscroll.dash--; }
 
 /* Page up expanded module */
-static void
-page_up_module (void) {
-  int exp_size = get_num_expanded_data_rows ();
+static void page_up_module(void) {
+  int exp_size = get_num_expanded_data_rows();
   int *scroll_ptr, *offset_ptr;
 
   scroll_ptr = &gscroll.module[gscroll.current].scroll;
@@ -630,9 +595,8 @@ page_up_module (void) {
 }
 
 /* Page down expanded module */
-static void
-page_down_module (void) {
-  int exp_size = get_num_expanded_data_rows ();
+static void page_down_module(void) {
+  int exp_size = get_num_expanded_data_rows();
   int *scroll_ptr, *offset_ptr;
 
   scroll_ptr = &gscroll.module[gscroll.current].scroll;
@@ -654,137 +618,130 @@ page_down_module (void) {
 
 /* Create a new find dialog window and render it. Upon closing the
  * window, dashboard is refreshed. */
-static int
-render_search_dialog (int search) {
-  if (render_find_dialog (main_win, &gscroll))
+static int render_search_dialog(int search) {
+  if (render_find_dialog(main_win, &gscroll))
     return 1;
 
-  pthread_mutex_lock (&gdns_thread.mutex);
-  search = perform_next_find (holder, &gscroll);
-  pthread_mutex_unlock (&gdns_thread.mutex);
+  pthread_mutex_lock(&gdns_thread.mutex);
+  search = perform_next_find(holder, &gscroll);
+  pthread_mutex_unlock(&gdns_thread.mutex);
   if (search != 0)
     return 1;
 
-  free_dashboard (dash);
-  allocate_data ();
+  free_dashboard(dash);
+  allocate_data();
 
   return 0;
 }
 
 /* Search for the next occurrence within the dashboard structure */
-static int
-search_next_match (int search) {
-  pthread_mutex_lock (&gdns_thread.mutex);
-  search = perform_next_find (holder, &gscroll);
-  pthread_mutex_unlock (&gdns_thread.mutex);
+static int search_next_match(int search) {
+  pthread_mutex_lock(&gdns_thread.mutex);
+  search = perform_next_find(holder, &gscroll);
+  pthread_mutex_unlock(&gdns_thread.mutex);
   if (search != 0)
     return 1;
 
-  free_dashboard (dash);
-  allocate_data ();
+  free_dashboard(dash);
+  allocate_data();
   return 0;
 }
 
 /* Update holder structure and dashboard screen */
-static void
-tail_term (void) {
-  pthread_mutex_lock (&gdns_thread.mutex);
-  free_holder (&holder);
-  pthread_cond_broadcast (&gdns_thread.not_empty);
-  pthread_mutex_unlock (&gdns_thread.mutex);
+static void tail_term(void) {
+  pthread_mutex_lock(&gdns_thread.mutex);
+  free_holder(&holder);
+  pthread_cond_broadcast(&gdns_thread.not_empty);
+  pthread_mutex_unlock(&gdns_thread.mutex);
 
-  free_dashboard (dash);
-  allocate_holder ();
-  allocate_data ();
+  free_dashboard(dash);
+  allocate_holder();
+  allocate_data();
 
-  term_size (main_win, &main_win_height);
+  term_size(main_win, &main_win_height);
 }
 
-static void
-tail_html (void) {
-  char *json = NULL;
+static void tail_html(void) {
+  char* json = NULL;
 
-  pthread_mutex_lock (&gdns_thread.mutex);
-  free_holder (&holder);
-  pthread_cond_broadcast (&gdns_thread.not_empty);
-  pthread_mutex_unlock (&gdns_thread.mutex);
+  pthread_mutex_lock(&gdns_thread.mutex);
+  free_holder(&holder);
+  pthread_cond_broadcast(&gdns_thread.not_empty);
+  pthread_mutex_unlock(&gdns_thread.mutex);
 
-  allocate_holder ();
+  allocate_holder();
 
-  pthread_mutex_lock (&gdns_thread.mutex);
-  json = get_json (holder, 1);
-  pthread_mutex_unlock (&gdns_thread.mutex);
+  pthread_mutex_lock(&gdns_thread.mutex);
+  json = get_json(holder, 1);
+  pthread_mutex_unlock(&gdns_thread.mutex);
 
   if (json == NULL)
     return;
 
-  pthread_mutex_lock (&gwswriter->mutex);
-  broadcast_holder (gwswriter->fd, json, strlen (json));
-  pthread_mutex_unlock (&gwswriter->mutex);
-  free (json);
+  pthread_mutex_lock(&gwswriter->mutex);
+  broadcast_holder(gwswriter->fd, json, strlen(json));
+  pthread_mutex_unlock(&gwswriter->mutex);
+  free(json);
 }
 
 /* Fast-forward latest JSON data when client connection is opened. */
-static void
-fast_forward_client (int listener) {
-  char *json = NULL;
+static void fast_forward_client(int listener) {
+  char* json = NULL;
 
-  pthread_mutex_lock (&gdns_thread.mutex);
-  json = get_json (holder, 1);
-  pthread_mutex_unlock (&gdns_thread.mutex);
+  pthread_mutex_lock(&gdns_thread.mutex);
+  json = get_json(holder, 1);
+  pthread_mutex_unlock(&gdns_thread.mutex);
 
   if (json == NULL)
     return;
 
-  pthread_mutex_lock (&gwswriter->mutex);
-  send_holder_to_client (gwswriter->fd, listener, json, strlen (json));
-  pthread_mutex_unlock (&gwswriter->mutex);
-  free (json);
+  pthread_mutex_lock(&gwswriter->mutex);
+  send_holder_to_client(gwswriter->fd, listener, json, strlen(json));
+  pthread_mutex_unlock(&gwswriter->mutex);
+  free(json);
 }
 
 /* Start reading data coming from the client side through the
  * WebSocket server. */
-void
-read_client (void *ptr_data) {
-  GWSReader *reader = (GWSReader *) ptr_data;
+void read_client(void* ptr_data) {
+  GWSReader* reader = (GWSReader*)ptr_data;
 
   /* check we have a fifo for reading */
   if (reader->fd == -1)
     return;
 
-  pthread_mutex_lock (&reader->mutex);
-  set_self_pipe (reader->self_pipe);
-  pthread_mutex_unlock (&reader->mutex);
+  pthread_mutex_lock(&reader->mutex);
+  set_self_pipe(reader->self_pipe);
+  pthread_mutex_unlock(&reader->mutex);
 
   while (1) {
     /* poll(2) will block */
-    if (read_fifo (reader, fast_forward_client))
+    if (read_fifo(reader, fast_forward_client))
       break;
   }
-  close (reader->fd);
+  close(reader->fd);
 }
 
 /* Parse tailed lines */
-static void
-parse_tail_follow (GLog * glog, FILE * fp) {
+static void parse_tail_follow(GLog* glog, FILE* fp) {
 #ifdef WITH_GETLINE
-  char *buf = NULL;
+  char* buf = NULL;
 #else
-  char buf[LINE_BUFFER] = { 0 };
+  char buf[LINE_BUFFER] = {0};
 #endif
 
   glog->bytes = 0;
 #ifdef WITH_GETLINE
-  while ((buf = fgetline (fp)) != NULL) {
+  while ((buf = fgetline(fp)) != NULL) {
 #else
-  while (fgets (buf, LINE_BUFFER, fp) != NULL) {
+  while (fgets(buf, LINE_BUFFER, fp) != NULL) {
 #endif
-    pthread_mutex_lock (&gdns_thread.mutex);
-    pre_process_log (glog, buf, 0);
-    pthread_mutex_unlock (&gdns_thread.mutex);
-    glog->bytes += strlen (buf);
+    pthread_mutex_lock(&gdns_thread.mutex);
+    pre_process_log(glog, buf, 0);
+    pthread_mutex_unlock(&gdns_thread.mutex);
+    glog->bytes += strlen(buf);
 #ifdef WITH_GETLINE
-    free (buf);
+    free(buf);
 #endif
     /* If the ingress rate is greater than MAX_BATCH_LINES,
      * then we break and allow to re-render the UI */
@@ -793,12 +750,11 @@ parse_tail_follow (GLog * glog, FILE * fp) {
   }
 }
 
-static void
-verify_inode (FILE * fp, GLog * glog) {
+static void verify_inode(FILE* fp, GLog* glog) {
   struct stat fdstat;
 
-  if (stat (glog->filename, &fdstat) == -1)
-    FATAL ("Unable to stat the specified log file '%s'. %s", glog->filename, strerror (errno));
+  if (stat(glog->filename, &fdstat) == -1)
+    FATAL("Unable to stat the specified log file '%s'. %s", glog->filename, strerror(errno));
 
   glog->size = fdstat.st_size;
   /* Either the log got smaller, probably was truncated so start reading from 0
@@ -807,7 +763,7 @@ verify_inode (FILE * fp, GLog * glog) {
    * the initial snippet for the new log for future iterations */
   if (fdstat.st_ino != glog->inode || glog->snippet[0] == '\0' || 0 == glog->size) {
     glog->length = glog->bytes = 0;
-    set_initial_persisted_data (glog, fp, glog->filename);
+    set_initial_persisted_data(glog, fp, glog->filename);
   }
   glog->inode = fdstat.st_ino;
 }
@@ -816,15 +772,14 @@ verify_inode (FILE * fp, GLog * glog) {
  *
  * If nothing changed, 0 is returned.
  * If log file changed, 1 is returned. */
-static int
-perform_tail_follow (GLog * glog) {
-  FILE *fp = NULL;
-  char buf[READ_BYTES + 1] = { 0 };
+static int perform_tail_follow(GLog* glog) {
+  FILE* fp = NULL;
+  char buf[READ_BYTES + 1] = {0};
   uint16_t len = 0;
   uint64_t length = 0;
 
   if (glog->filename[0] == '-' && glog->filename[1] == '\0') {
-    parse_tail_follow (glog, glog->pipe);
+    parse_tail_follow(glog, glog->pipe);
     /* did we read something from the pipe? */
     if (0 == glog->bytes)
       return 0;
@@ -833,7 +788,7 @@ perform_tail_follow (GLog * glog) {
     goto out;
   }
 
-  length = file_size (glog->filename);
+  length = file_size(glog->filename);
 
   /* file hasn't changed */
   /* ###NOTE: This assumes the log file being read can be of smaller size, e.g.,
@@ -841,27 +796,27 @@ perform_tail_follow (GLog * glog) {
   if (length == glog->length)
     return 0;
 
-  if (!(fp = fopen (glog->filename, "r")))
-    FATAL ("Unable to read the specified log file '%s'. %s", glog->filename, strerror (errno));
+  if (!(fp = fopen(glog->filename, "r")))
+    FATAL("Unable to read the specified log file '%s'. %s", glog->filename, strerror(errno));
 
-  verify_inode (fp, glog);
+  verify_inode(fp, glog);
 
-  len = MIN (glog->snippetlen, length);
+  len = MIN(glog->snippetlen, length);
   /* This is not ideal, but maybe the only reliable way to know if the
    * current log looks different than our first read/parse */
-  if ((fread (buf, len, 1, fp)) != 1 && ferror (fp))
-    FATAL ("Unable to fread the specified log file '%s'", glog->filename);
+  if ((fread(buf, len, 1, fp)) != 1 && ferror(fp))
+    FATAL("Unable to fread the specified log file '%s'", glog->filename);
 
   /* For the case where the log got larger since the last iteration, we attempt
    * to compare the first READ_BYTES against the READ_BYTES we had since the last
    * parse. If it's different, then it means the file may got truncated but grew
    * faster than the last iteration (odd, but possible), so we read from 0* */
-  if (glog->snippet[0] != '\0' && buf[0] != '\0' && memcmp (glog->snippet, buf, len) != 0)
+  if (glog->snippet[0] != '\0' && buf[0] != '\0' && memcmp(glog->snippet, buf, len) != 0)
     glog->length = glog->bytes = 0;
 
-  if (!fseeko (fp, glog->length, SEEK_SET))
-    parse_tail_follow (glog, fp);
-  fclose (fp);
+  if (!fseeko(fp, glog->length, SEEK_SET))
+    parse_tail_follow(glog, fp);
+  fclose(fp);
 
   glog->length += glog->bytes;
 
@@ -869,7 +824,7 @@ perform_tail_follow (GLog * glog) {
   if (glog->inode) {
     glog->lp.line = glog->read;
     glog->lp.size = glog->size;
-    ht_insert_last_parse (glog->inode, glog->lp);
+    ht_insert_last_parse(glog->inode, glog->lp);
   }
 
 out:
@@ -878,11 +833,10 @@ out:
 }
 
 /* Loop over and perform a follow for the given logs */
-static void
-tail_loop_html (Logs * logs) {
+static void tail_loop_html(Logs* logs) {
   struct timespec refresh = {
-    .tv_sec = conf.html_refresh ? conf.html_refresh : HTML_REFRESH,
-    .tv_nsec = 0,
+      .tv_sec = conf.html_refresh ? conf.html_refresh : HTML_REFRESH,
+      .tv_nsec = 0,
   };
   int i = 0, ret = 0;
 
@@ -891,23 +845,22 @@ tail_loop_html (Logs * logs) {
       break;
 
     for (i = 0, ret = 0; i < logs->size; ++i)
-      ret |= perform_tail_follow (&logs->glog[i]);      /* 0.2 secs */
+      ret |= perform_tail_follow(&logs->glog[i]); /* 0.2 secs */
 
     if (1 == ret)
-      tail_html ();
+      tail_html();
 
-    if (nanosleep (&refresh, NULL) == -1 && errno != EINTR)
-      FATAL ("nanosleep: %s", strerror (errno));
+    if (nanosleep(&refresh, NULL) == -1 && errno != EINTR)
+      FATAL("nanosleep: %s", strerror(errno));
   }
 }
 
 /* Entry point to start processing the HTML output */
-static void
-process_html (Logs * logs, const char *filename) {
+static void process_html(Logs* logs, const char* filename) {
   /* render report */
-  pthread_mutex_lock (&gdns_thread.mutex);
-  output_html (holder, filename);
-  pthread_mutex_unlock (&gdns_thread.mutex);
+  pthread_mutex_lock(&gdns_thread.mutex);
+  output_html(holder, filename);
+  pthread_mutex_unlock(&gdns_thread.mutex);
 
   /* not real time? */
   if (!conf.real_time_html)
@@ -916,99 +869,93 @@ process_html (Logs * logs, const char *filename) {
   if (logs->load_from_disk_only)
     return;
 
-  pthread_mutex_lock (&gwswriter->mutex);
-  gwswriter->fd = open_fifoin ();
-  pthread_mutex_unlock (&gwswriter->mutex);
+  pthread_mutex_lock(&gwswriter->mutex);
+  gwswriter->fd = open_fifoin();
+  pthread_mutex_unlock(&gwswriter->mutex);
 
   /* open fifo for write */
   if (gwswriter->fd == -1)
     return;
 
-  set_ready_state ();
-  tail_loop_html (logs);
-  close (gwswriter->fd);
+  set_ready_state();
+  tail_loop_html(logs);
+  close(gwswriter->fd);
 }
 
 /* Iterate over available panels and advance the panel pointer. */
-static int
-next_module (void) {
+static int next_module(void) {
   int next = -1;
 
-  if ((next = get_next_module (gscroll.current)) == -1)
+  if ((next = get_next_module(gscroll.current)) == -1)
     return 1;
 
   gscroll.current = next;
   if (!conf.no_tab_scroll)
-    gscroll.dash = get_module_index (gscroll.current) * DASH_COLLAPSED;
+    gscroll.dash = get_module_index(gscroll.current) * DASH_COLLAPSED;
 
   return 0;
 }
 
 /* Iterate over available panels and rewind the panel pointer. */
-static int
-previous_module (void) {
+static int previous_module(void) {
   int prev = -1;
 
-  if ((prev = get_prev_module (gscroll.current)) == -1)
+  if ((prev = get_prev_module(gscroll.current)) == -1)
     return 1;
 
   gscroll.current = prev;
   if (!conf.no_tab_scroll)
-    gscroll.dash = get_module_index (gscroll.current) * DASH_COLLAPSED;
+    gscroll.dash = get_module_index(gscroll.current) * DASH_COLLAPSED;
 
   return 0;
 }
 
 /* Perform several curses operations upon resizing the terminal. */
-static void
-window_resize (void) {
-  endwin ();
-  refresh ();
-  werase (header_win);
-  werase (main_win);
-  werase (stdscr);
-  term_size (main_win, &main_win_height);
-  refresh ();
+static void window_resize(void) {
+  endwin();
+  refresh();
+  werase(header_win);
+  werase(main_win);
+  werase(stdscr);
+  term_size(main_win, &main_win_height);
+  refresh();
 }
 
 /* Create a new sort dialog window and render it. Upon closing the
  * window, dashboard is refreshed. */
-static void
-render_sort_dialog (void) {
-  load_sort_win (main_win, gscroll.current, &module_sort[gscroll.current]);
+static void render_sort_dialog(void) {
+  load_sort_win(main_win, gscroll.current, &module_sort[gscroll.current]);
 
-  pthread_mutex_lock (&gdns_thread.mutex);
-  free_holder (&holder);
-  pthread_cond_broadcast (&gdns_thread.not_empty);
-  pthread_mutex_unlock (&gdns_thread.mutex);
+  pthread_mutex_lock(&gdns_thread.mutex);
+  free_holder(&holder);
+  pthread_cond_broadcast(&gdns_thread.not_empty);
+  pthread_mutex_unlock(&gdns_thread.mutex);
 
-  free_dashboard (dash);
-  allocate_holder ();
-  allocate_data ();
+  free_dashboard(dash);
+  allocate_holder();
+  allocate_data();
 }
 
-static void
-term_tail_logs (Logs * logs) {
-  struct timespec ts = {.tv_sec = 0,.tv_nsec = 200000000 };     /* 0.2 seconds */
+static void term_tail_logs(Logs* logs) {
+  struct timespec ts = {.tv_sec = 0, .tv_nsec = 200000000}; /* 0.2 seconds */
   uint32_t offset = 0;
   int i, ret;
 
   for (i = 0, ret = 0; i < logs->size; ++i)
-    ret |= perform_tail_follow (&logs->glog[i]);
+    ret |= perform_tail_follow(&logs->glog[i]);
 
   if (1 == ret) {
-    tail_term ();
+    tail_term();
     offset = *logs->processed - logs->offset;
-    render_screens (offset);
+    render_screens(offset);
   }
-  if (nanosleep (&ts, NULL) == -1 && errno != EINTR) {
-    FATAL ("nanosleep: %s", strerror (errno));
+  if (nanosleep(&ts, NULL) == -1 && errno != EINTR) {
+    FATAL("nanosleep: %s", strerror(errno));
   }
 }
 
 /* Interfacing with the keyboard */
-static void
-get_keys (Logs * logs) {
+static void get_keys(Logs* logs) {
   int search = 0;
   int c, quit = 1;
   uint32_t offset = 0;
@@ -1018,215 +965,213 @@ get_keys (Logs * logs) {
       break;
 
     offset = *logs->processed - logs->offset;
-    c = wgetch (stdscr);
+    c = wgetch(stdscr);
     switch (c) {
-    case 'q':  /* quit */
+    case 'q': /* quit */
       if (!gscroll.expanded) {
         quit = 0;
         break;
       }
-      if (collapse_current_module () == 0)
-        render_screens (offset);
+      if (collapse_current_module() == 0)
+        render_screens(offset);
       break;
-    case KEY_F (1):
+    case KEY_F(1):
     case '?':
     case 'h':
-      load_help_popup (main_win);
-      render_screens (offset);
+      load_help_popup(main_win);
+      render_screens(offset);
       break;
-    case 49:   /* 1 */
+    case 49: /* 1 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, VISITORS) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, VISITORS) == 0)
+        render_screens(offset);
       break;
-    case 50:   /* 2 */
+    case 50: /* 2 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, REQUESTS) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, REQUESTS) == 0)
+        render_screens(offset);
       break;
-    case 51:   /* 3 */
+    case 51: /* 3 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, REQUESTS_STATIC) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, REQUESTS_STATIC) == 0)
+        render_screens(offset);
       break;
-    case 52:   /* 4 */
+    case 52: /* 4 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, NOT_FOUND) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, NOT_FOUND) == 0)
+        render_screens(offset);
       break;
-    case 53:   /* 5 */
+    case 53: /* 5 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, HOSTS) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, HOSTS) == 0)
+        render_screens(offset);
       break;
-    case 54:   /* 6 */
+    case 54: /* 6 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, OS) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, OS) == 0)
+        render_screens(offset);
       break;
-    case 55:   /* 7 */
+    case 55: /* 7 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, BROWSERS) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, BROWSERS) == 0)
+        render_screens(offset);
       break;
-    case 56:   /* 8 */
+    case 56: /* 8 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, VISIT_TIMES) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, VISIT_TIMES) == 0)
+        render_screens(offset);
       break;
-    case 57:   /* 9 */
+    case 57: /* 9 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, VIRTUAL_HOSTS) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, VIRTUAL_HOSTS) == 0)
+        render_screens(offset);
       break;
-    case 48:   /* 0 */
+    case 48: /* 0 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, REFERRERS) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, REFERRERS) == 0)
+        render_screens(offset);
       break;
-    case 33:   /* shift + 1 */
+    case 33: /* shift + 1 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, REFERRING_SITES) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, REFERRING_SITES) == 0)
+        render_screens(offset);
       break;
-    case 64:   /* shift + 2 */
+    case 64: /* shift + 2 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, KEYPHRASES) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, KEYPHRASES) == 0)
+        render_screens(offset);
       break;
-    case 35:   /* Shift + 3 */
+    case 35: /* Shift + 3 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, STATUS_CODES) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, STATUS_CODES) == 0)
+        render_screens(offset);
       break;
-    case 36:   /* Shift + 4 */
+    case 36: /* Shift + 4 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, REMOTE_USER) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, REMOTE_USER) == 0)
+        render_screens(offset);
       break;
-    case 37:   /* Shift + 5 */
+    case 37: /* Shift + 5 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, CACHE_STATUS) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, CACHE_STATUS) == 0)
+        render_screens(offset);
       break;
-#ifdef HAVE_GEOLOCATION
-    case 94:   /* Shift + 6 */
+    case 94: /* Shift + 6 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, GEO_LOCATION) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, GEO_LOCATION) == 0)
+        render_screens(offset);
       break;
-    case 38:   /* Shift + 7 */
+    case 38: /* Shift + 7 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, ASN) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, ASN) == 0)
+        render_screens(offset);
       break;
-#endif
-    case 42:   /* Shift + 7 */
+    case 42: /* Shift + 7 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, MIME_TYPE) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, MIME_TYPE) == 0)
+        render_screens(offset);
       break;
-    case 40:   /* Shift + 8 */
+    case 40: /* Shift + 8 */
       /* reset expanded module */
-      if (set_module_to (&gscroll, TLS_TYPE) == 0)
-        render_screens (offset);
+      if (set_module_to(&gscroll, TLS_TYPE) == 0)
+        render_screens(offset);
       break;
-    case 9:    /* TAB */
+    case 9: /* TAB */
       /* reset expanded module */
-      collapse_current_module ();
-      if (next_module () == 0)
-        render_screens (offset);
+      collapse_current_module();
+      if (next_module() == 0)
+        render_screens(offset);
       break;
-    case 353:  /* Shift TAB */
+    case 353: /* Shift TAB */
       /* reset expanded module */
-      collapse_current_module ();
-      if (previous_module () == 0)
-        render_screens (offset);
+      collapse_current_module();
+      if (previous_module() == 0)
+        render_screens(offset);
       break;
-    case 'g':  /* g = top */
-      scroll_to_first_line ();
-      display_content (main_win, dash, &gscroll);
+    case 'g': /* g = top */
+      scroll_to_first_line();
+      display_content(main_win, dash, &gscroll);
       break;
-    case 'G':  /* G = down */
-      scroll_to_last_line ();
-      display_content (main_win, dash, &gscroll);
+    case 'G': /* G = down */
+      scroll_to_last_line();
+      display_content(main_win, dash, &gscroll);
       break;
       /* expand dashboard module */
     case KEY_RIGHT:
     case 0x0a:
     case 0x0d:
-    case 32:   /* ENTER */
-    case 79:   /* o */
-    case 111:  /* O */
+    case 32:  /* ENTER */
+    case 79:  /* o */
+    case 111: /* O */
     case KEY_ENTER:
-      expand_current_module ();
-      display_content (main_win, dash, &gscroll);
+      expand_current_module();
+      display_content(main_win, dash, &gscroll);
       break;
-    case KEY_DOWN:     /* scroll main dashboard */
+    case KEY_DOWN: /* scroll main dashboard */
       if ((gscroll.dash + main_win_height) < dash->total_alloc) {
         gscroll.dash++;
-        display_content (main_win, dash, &gscroll);
+        display_content(main_win, dash, &gscroll);
       }
       break;
-    case KEY_MOUSE:    /* handles mouse events */
-      if (expand_on_mouse_click () == 0)
-        render_screens (offset);
+    case KEY_MOUSE: /* handles mouse events */
+      if (expand_on_mouse_click() == 0)
+        render_screens(offset);
       break;
-    case 106:  /* j - DOWN expanded module */
-      scroll_down_expanded_module ();
-      display_content (main_win, dash, &gscroll);
+    case 106: /* j - DOWN expanded module */
+      scroll_down_expanded_module();
+      display_content(main_win, dash, &gscroll);
       break;
       /* scroll up main_win */
     case KEY_UP:
       if (gscroll.dash > 0) {
-        scroll_up_dashboard ();
-        display_content (main_win, dash, &gscroll);
+        scroll_up_dashboard();
+        display_content(main_win, dash, &gscroll);
       }
       break;
-    case 2:    /* ^ b - page up */
-    case 339:  /* ^ PG UP */
-      page_up_module ();
-      display_content (main_win, dash, &gscroll);
+    case 2:   /* ^ b - page up */
+    case 339: /* ^ PG UP */
+      page_up_module();
+      display_content(main_win, dash, &gscroll);
       break;
-    case 6:    /* ^ f - page down */
-    case 338:  /* ^ PG DOWN */
-      page_down_module ();
-      display_content (main_win, dash, &gscroll);
+    case 6:   /* ^ f - page down */
+    case 338: /* ^ PG DOWN */
+      page_down_module();
+      display_content(main_win, dash, &gscroll);
       break;
-    case 107:  /* k - UP expanded module */
-      scroll_up_expanded_module ();
-      display_content (main_win, dash, &gscroll);
+    case 107: /* k - UP expanded module */
+      scroll_up_expanded_module();
+      display_content(main_win, dash, &gscroll);
       break;
     case 'n':
-      if (search_next_match (search) == 0)
-        render_screens (offset);
+      if (search_next_match(search) == 0)
+        render_screens(offset);
       break;
     case '/':
-      if (render_search_dialog (search) == 0)
-        render_screens (offset);
+      if (render_search_dialog(search) == 0)
+        render_screens(offset);
       break;
-    case 99:   /* c */
+    case 99: /* c */
       if (conf.no_color)
         break;
-      load_schemes_win (main_win);
-      free_dashboard (dash);
-      allocate_data ();
-      set_wbkgd (main_win, header_win);
-      render_screens (offset);
+      load_schemes_win(main_win);
+      free_dashboard(dash);
+      allocate_data();
+      set_wbkgd(main_win, header_win);
+      render_screens(offset);
       break;
-    case 115:  /* s */
-      render_sort_dialog ();
-      render_screens (offset);
+    case 115: /* s */
+      render_sort_dialog();
+      render_screens(offset);
       break;
     case 269:
     case KEY_RESIZE:
-      window_resize ();
-      render_screens (offset);
+      window_resize();
+      render_screens(offset);
       break;
     default:
       if (logs->load_from_disk_only)
         break;
-      term_tail_logs (logs);
+      term_tail_logs(logs);
       break;
     }
   }
@@ -1236,109 +1181,101 @@ get_keys (Logs * logs) {
  * Note: As we store with time_t second resolution,
  * if elapsed time == 0, we will bump it to 1.
  */
-static void
-set_accumulated_time (void) {
+static void set_accumulated_time(void) {
   time_t elapsed = end_proc - start_proc;
   elapsed = (!elapsed) ? !elapsed : elapsed;
-  ht_inc_cnt_overall ("processing_time", elapsed);
+  ht_inc_cnt_overall("processing_time", elapsed);
 }
 
 /* Execute the following calls right before we start the main
  * processing/parsing loop */
-static void
-init_processing (void) {
+static void init_processing(void) {
   /* perform some additional checks before parsing panels */
-  verify_panels ();
+  verify_panels();
   /* initialize storage */
-  pthread_mutex_lock (&parsing_spinner->mutex);
+  pthread_mutex_lock(&parsing_spinner->mutex);
   parsing_spinner->label = "SETTING UP STORAGE";
-  pthread_mutex_unlock (&parsing_spinner->mutex);
+  pthread_mutex_unlock(&parsing_spinner->mutex);
 
-  init_storage ();
-  insert_methods_protocols ();
-  set_spec_date_format ();
+  init_storage();
+  insert_methods_protocols();
+  set_spec_date_format();
 
-  if ((!conf.skip_term_resolver && !conf.output_stdout) ||
-      (conf.enable_html_resolver && conf.real_time_html))
-    gdns_thread_create ();
+  if ((!conf.skip_term_resolver && !conf.output_stdout) || (conf.enable_html_resolver && conf.real_time_html))
+    gdns_thread_create();
 }
 
 /* Determine the type of output, i.e., JSON, CSV, HTML */
-static void
-standard_output (Logs * logs) {
+static void standard_output(Logs* logs) {
   char *csv = NULL, *json = NULL, *html = NULL;
 
   /* CSV */
-  if (find_output_type (&csv, "csv", 1) == 0)
-    output_csv (holder, csv);
+  if (find_output_type(&csv, "csv", 1) == 0)
+    output_csv(holder, csv);
   /* JSON */
-  if (find_output_type (&json, "json", 1) == 0)
-    output_json (holder, json);
+  if (find_output_type(&json, "json", 1) == 0)
+    output_json(holder, json);
   /* HTML */
-  if (find_output_type (&html, "html", 1) == 0 || conf.output_format_idx == 0)
-    process_html (logs, html);
+  if (find_output_type(&html, "html", 1) == 0 || conf.output_format_idx == 0)
+    process_html(logs, html);
 
-  free (csv);
-  free (html);
-  free (json);
+  free(csv);
+  free(html);
+  free(json);
 }
 
 /* Output to a terminal */
-static void
-curses_output (Logs * logs) {
-  allocate_data ();
+static void curses_output(Logs* logs) {
+  allocate_data();
 
-  clean_stdscrn ();
-  render_screens (0);
+  clean_stdscrn();
+  render_screens(0);
   /* will loop in here */
-  get_keys (logs);
+  get_keys(logs);
 }
 
 /* Set locale */
-static void
-set_locale (void) {
-  char *loc_ctype;
+static void set_locale(void) {
+  char* loc_ctype;
 
-  setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+  setlocale(LC_ALL, "");
+  bindtextdomain(PACKAGE, LOCALEDIR);
+  textdomain(PACKAGE);
 
-  loc_ctype = getenv ("LC_CTYPE");
+  loc_ctype = getenv("LC_CTYPE");
   if (loc_ctype != NULL)
-    setlocale (LC_CTYPE, loc_ctype);
-  else if ((loc_ctype = getenv ("LC_ALL")))
-    setlocale (LC_CTYPE, loc_ctype);
+    setlocale(LC_CTYPE, loc_ctype);
+  else if ((loc_ctype = getenv("LC_ALL")))
+    setlocale(LC_CTYPE, loc_ctype);
   else
-    setlocale (LC_CTYPE, "");
+    setlocale(LC_CTYPE, "");
 }
 
 /* Attempt to get the current name of a terminal or fallback to /dev/tty
  *
  * On error, -1 is returned
  * On success, the new file descriptor is returned */
-static int
-open_term (char **buf) {
-  const char *term = "/dev/tty";
+static int open_term(char** buf) {
+  const char* term = "/dev/tty";
 
-  if (!isatty (STDERR_FILENO) || (term = ttyname (STDERR_FILENO)) == 0) {
-    if (!isatty (STDOUT_FILENO) || (term = ttyname (STDOUT_FILENO)) == 0) {
-      if (!isatty (STDIN_FILENO) || (term = ttyname (STDIN_FILENO)) == 0) {
+  if (!isatty(STDERR_FILENO) || (term = ttyname(STDERR_FILENO)) == 0) {
+    if (!isatty(STDOUT_FILENO) || (term = ttyname(STDOUT_FILENO)) == 0) {
+      if (!isatty(STDIN_FILENO) || (term = ttyname(STDIN_FILENO)) == 0) {
         term = "/dev/tty";
       }
     }
   }
-  *buf = xstrdup (term);
+  *buf = xstrdup(term);
 
-  return open (term, O_RDONLY);
+  return open(term, O_RDONLY);
 }
 
 /* Determine if reading from a pipe, and duplicate file descriptors so
  * it doesn't get in the way of curses' normal reading stdin for
  * wgetch() */
-static FILE *
-set_pipe_stdin (void) {
-  char *term = NULL;
-  FILE *pipe = stdin;
+static FILE* set_pipe_stdin(void) {
+  char* term = NULL;
+  FILE* pipe = stdin;
   int term_fd = -1;
   int pipe_fd = -1;
 
@@ -1350,19 +1287,19 @@ set_pipe_stdin (void) {
    * Note: If used from the cron, it will require the
    * user to use a single dash to parse piped data such as:
    * cat access.log | goaccess - */
-  if ((term_fd = open_term (&term)) == -1)
+  if ((term_fd = open_term(&term)) == -1)
     goto out1;
 
-  if ((pipe_fd = dup (fileno (stdin))) == -1)
-    FATAL ("Unable to dup stdin: %s", strerror (errno));
+  if ((pipe_fd = dup(fileno(stdin))) == -1)
+    FATAL("Unable to dup stdin: %s", strerror(errno));
 
-  pipe = fdopen (pipe_fd, "r");
-  if (freopen (term, "r", stdin) == 0)
-    FATAL ("Unable to open input from TTY");
-  if (fileno (stdin) != 0)
-    (void) dup2 (fileno (stdin), 0);
+  pipe = fdopen(pipe_fd, "r");
+  if (freopen(term, "r", stdin) == 0)
+    FATAL("Unable to open input from TTY");
+  if (fileno(stdin) != 0)
+    (void)dup2(fileno(stdin), 0);
 
-  add_dash_filename ();
+  add_dash_filename();
 
 out1:
 
@@ -1373,259 +1310,246 @@ out1:
 
   /* Using select(), poll(), or epoll(), etc may be a better choice... */
   if (pipe_fd == -1)
-    pipe_fd = fileno (pipe);
-  if (fcntl (pipe_fd, F_SETFL, fcntl (pipe_fd, F_GETFL, 0) | O_NONBLOCK) == -1)
-    FATAL ("Unable to set fd as non-blocking: %s.", strerror (errno));
+    pipe_fd = fileno(pipe);
+  if (fcntl(pipe_fd, F_SETFL, fcntl(pipe_fd, F_GETFL, 0) | O_NONBLOCK) == -1)
+    FATAL("Unable to set fd as non-blocking: %s.", strerror(errno));
 
 out2:
 
-  free (term);
+  free(term);
 
   return pipe;
 }
 
 /* Determine if we are getting data from the stdin, and where are we
  * outputting to. */
-static void
-set_io (FILE ** pipe) {
+static void set_io(FILE** pipe) {
   /* For backwards compatibility, check if we are not outputting to a
    * terminal or if an output format was supplied */
-  if (!isatty (STDOUT_FILENO) || conf.output_format_idx > 0)
+  if (!isatty(STDOUT_FILENO) || conf.output_format_idx > 0)
     conf.output_stdout = 1;
   /* dup fd if data piped */
-  if (!isatty (STDIN_FILENO))
-    *pipe = set_pipe_stdin ();
+  if (!isatty(STDIN_FILENO))
+    *pipe = set_pipe_stdin();
 }
 
 /* Process command line options and set some default options. */
-static void
-parse_cmd_line (int argc, char **argv) {
-  read_option_args (argc, argv);
-  set_default_static_files ();
+static void parse_cmd_line(int argc, char** argv) {
+  read_option_args(argc, argv);
+  set_default_static_files();
 }
 
-static void
-handle_signal_action (GO_UNUSED int sig_number) {
-  fprintf (stderr, "\nSIGINT caught!\n");
-  fprintf (stderr, "Closing GoAccess...\n");
+static void handle_signal_action(GO_UNUSED int sig_number) {
+  fprintf(stderr, "\nSIGINT caught!\n");
+  fprintf(stderr, "Closing GoAccess...\n");
 
   if (conf.output_stdout && conf.real_time_html)
-    stop_ws_server (gwswriter, gwsreader);
+    stop_ws_server(gwswriter, gwsreader);
   conf.stop_processing = 1;
 }
 
-static void
-setup_thread_signals (void) {
+static void setup_thread_signals(void) {
   struct sigaction act;
 
   act.sa_handler = handle_signal_action;
-  sigemptyset (&act.sa_mask);
+  sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
 
-  sigaction (SIGINT, &act, NULL);
-  sigaction (SIGTERM, &act, NULL);
-  signal (SIGPIPE, SIG_IGN);
+  sigaction(SIGINT, &act, NULL);
+  sigaction(SIGTERM, &act, NULL);
+  signal(SIGPIPE, SIG_IGN);
 
   /* Restore old signal mask for the main thread */
-  pthread_sigmask (SIG_SETMASK, &oldset, NULL);
+  pthread_sigmask(SIG_SETMASK, &oldset, NULL);
 }
 
-static void
-block_thread_signals (void) {
+static void block_thread_signals(void) {
   /* Avoid threads catching SIGINT/SIGPIPE/SIGTERM and handle them in
    * main thread */
   sigset_t sigset;
-  sigemptyset (&sigset);
-  sigaddset (&sigset, SIGINT);
-  sigaddset (&sigset, SIGPIPE);
-  sigaddset (&sigset, SIGTERM);
-  pthread_sigmask (SIG_BLOCK, &sigset, &oldset);
+  sigemptyset(&sigset);
+  sigaddset(&sigset, SIGINT);
+  sigaddset(&sigset, SIGPIPE);
+  sigaddset(&sigset, SIGTERM);
+  pthread_sigmask(SIG_BLOCK, &sigset, &oldset);
 }
 
 /* Initialize various types of data. */
-static Logs *
-initializer (void) {
+static Logs* initializer(void) {
   int i;
-  FILE *pipe = NULL;
-  Logs *logs;
+  FILE* pipe = NULL;
+  Logs* logs;
 
   /* drop permissions right away */
   if (conf.username)
-    drop_permissions ();
+    drop_permissions();
 
   /* then initialize modules and set */
-  gscroll.current = init_modules ();
+  gscroll.current = init_modules();
   /* setup to use the current locale */
-  set_locale ();
+  set_locale();
 
-  parse_browsers_file ();
+  parse_browsers_file();
 
-#ifdef HAVE_GEOLOCATION
-  init_geoip ();
-#endif
+  init_geoip();
 
-  set_io (&pipe);
+  set_io(&pipe);
 
   /* init glog */
-  if (!(logs = init_logs (conf.filenames_idx)))
-    FATAL (ERR_NO_DATA_PASSED);
+  if (!(logs = init_logs(conf.filenames_idx)))
+    FATAL(ERR_NO_DATA_PASSED);
 
-  set_signal_data (logs);
+  set_signal_data(logs);
 
   for (i = 0; i < logs->size; ++i)
     if (logs->glog[i].filename[0] == '-' && logs->glog[i].filename[1] == '\0')
       logs->glog[i].pipe = pipe;
 
   /* init parsing spinner */
-  parsing_spinner = new_gspinner ();
+  parsing_spinner = new_gspinner();
   parsing_spinner->processed = &(logs->processed);
   parsing_spinner->filename = &(logs->filename);
 
   /* init reverse lookup thread */
-  gdns_init ();
+  gdns_init();
 
   /* init random number generator */
-  srand (getpid ());
-  init_pre_storage (logs);
+  srand(getpid());
+  init_pre_storage(logs);
 
   return logs;
 }
 
-static char *
-generate_fifo_name (void) {
+static char* generate_fifo_name(void) {
   char fname[RAND_FN];
-  const char *tmp;
-  char *path;
+  const char* tmp;
+  char* path;
   size_t len;
 
-  if ((tmp = getenv ("TMPDIR")) == NULL)
+  if ((tmp = getenv("TMPDIR")) == NULL)
     tmp = "/tmp";
 
-  memset (fname, 0, sizeof (fname));
-  genstr (fname, RAND_FN - 1);
+  memset(fname, 0, sizeof(fname));
+  genstr(fname, RAND_FN - 1);
 
-  len = snprintf (NULL, 0, "%s/goaccess_fifo_%s", tmp, fname) + 1;
-  path = xmalloc (len);
-  snprintf (path, len, "%s/goaccess_fifo_%s", tmp, fname);
+  len = snprintf(NULL, 0, "%s/goaccess_fifo_%s", tmp, fname) + 1;
+  path = xmalloc(len);
+  snprintf(path, len, "%s/goaccess_fifo_%s", tmp, fname);
 
   return path;
 }
 
-static int
-spawn_ws (void) {
-  gwswriter = new_gwswriter ();
-  gwsreader = new_gwsreader ();
+static int spawn_ws(void) {
+  gwswriter = new_gwswriter();
+  gwsreader = new_gwsreader();
 
   if (!conf.fifo_in)
-    conf.fifo_in = generate_fifo_name ();
+    conf.fifo_in = generate_fifo_name();
   if (!conf.fifo_out)
-    conf.fifo_out = generate_fifo_name ();
+    conf.fifo_out = generate_fifo_name();
 
   /* open fifo for read */
-  if ((gwsreader->fd = open_fifoout ()) == -1) {
-    LOG (("Unable to open FIFO for read.\n"));
+  if ((gwsreader->fd = open_fifoout()) == -1) {
+    LOG(("Unable to open FIFO for read.\n"));
     return 1;
   }
 
   if (conf.daemonize)
-    daemonize ();
-  setup_ws_server (gwswriter, gwsreader);
+    daemonize();
+  setup_ws_server(gwswriter, gwsreader);
 
   return 0;
 }
 
-static void
-set_standard_output (void) {
+static void set_standard_output(void) {
   int html = 0;
 
   /* HTML */
-  if (find_output_type (NULL, "html", 0) == 0 || conf.output_format_idx == 0)
+  if (find_output_type(NULL, "html", 0) == 0 || conf.output_format_idx == 0)
     html = 1;
 
   /* Spawn WebSocket server threads */
   if (html && conf.real_time_html) {
-    if (spawn_ws ())
+    if (spawn_ws())
       return;
   }
-  setup_thread_signals ();
+  setup_thread_signals();
 
   /* Spawn progress spinner thread */
-  ui_spinner_create (parsing_spinner);
+  ui_spinner_create(parsing_spinner);
 }
 
 /* Set up curses. */
-static void
-set_curses (Logs * logs, int *quit) {
-  const char *err_log = NULL;
+static void set_curses(Logs* logs, int* quit) {
+  const char* err_log = NULL;
 
-  setup_thread_signals ();
-  set_input_opts ();
-  if (conf.no_color || has_colors () == FALSE) {
+  setup_thread_signals();
+  set_input_opts();
+  if (conf.no_color || has_colors() == FALSE) {
     conf.color_scheme = NO_COLOR;
     conf.no_color = 1;
   } else {
-    start_color ();
+    start_color();
   }
-  init_colors (0);
-  init_windows (&header_win, &main_win);
-  set_curses_spinner (parsing_spinner);
+  init_colors(0);
+  init_windows(&header_win, &main_win);
+  set_curses_spinner(parsing_spinner);
 
   /* Display configuration dialog if missing formats and not piping data in */
-  if (!conf.read_stdin && (verify_formats () || conf.load_conf_dlg)) {
-    refresh ();
-    *quit = render_confdlg (logs, parsing_spinner);
-    clear ();
+  if (!conf.read_stdin && (verify_formats() || conf.load_conf_dlg)) {
+    refresh();
+    *quit = render_confdlg(logs, parsing_spinner);
+    clear();
   }
   /* Piping data in without log/date/time format */
-  else if (conf.read_stdin && (err_log = verify_formats ())) {
-    FATAL ("%s", err_log);
+  else if (conf.read_stdin && (err_log = verify_formats())) {
+    FATAL("%s", err_log);
   }
   /* straight parsing */
   else {
-    ui_spinner_create (parsing_spinner);
+    ui_spinner_create(parsing_spinner);
   }
 }
 
 /* Where all begins... */
-int
-main (int argc, char **argv) {
-  Logs *logs = NULL;
+int main(int argc, char** argv) {
+  Logs* logs = NULL;
   int quit = 0, ret = 0;
 
-  block_thread_signals ();
-  setup_sigsegv_handler ();
+  block_thread_signals();
+  setup_sigsegv_handler();
 
   /* command line/config options */
-  verify_global_config (argc, argv);
-  parse_conf_file (&argc, &argv);
-  parse_cmd_line (argc, argv);
+  verify_global_config(argc, argv);
+  parse_conf_file(&argc, &argv);
+  parse_cmd_line(argc, argv);
 
-  logs = initializer ();
+  logs = initializer();
 
   /* ignore outputting, process only */
   if (conf.process_and_exit) {
   }
   /* set stdout */
   else if (conf.output_stdout) {
-    set_standard_output ();
+    set_standard_output();
   }
   /* set curses */
   else {
-    set_curses (logs, &quit);
+    set_curses(logs, &quit);
   }
 
   /* no log/date/time format set */
   if (quit)
     goto clean;
 
-  init_processing ();
+  init_processing();
 
   /* main processing event */
-  time (&start_proc);
+  time(&start_proc);
   parsing_spinner->label = "PARSING";
 
-  if ((ret = parse_log (logs, 0))) {
-    end_spinner ();
+  if ((ret = parse_log(logs, 0))) {
+    end_spinner();
     goto clean;
   }
 
@@ -1633,31 +1557,31 @@ main (int argc, char **argv) {
     goto clean;
   logs->offset = *logs->processed;
 
-  pthread_mutex_lock (&parsing_spinner->mutex);
+  pthread_mutex_lock(&parsing_spinner->mutex);
   parsing_spinner->label = "RENDERING";
-  pthread_mutex_unlock (&parsing_spinner->mutex);
+  pthread_mutex_unlock(&parsing_spinner->mutex);
 
-  parse_initial_sort ();
-  allocate_holder ();
+  parse_initial_sort();
+  allocate_holder();
 
-  end_spinner ();
-  time (&end_proc);
+  end_spinner();
+  time(&end_proc);
 
-  set_accumulated_time ();
+  set_accumulated_time();
   if (conf.process_and_exit) {
   }
   /* stdout */
   else if (conf.output_stdout) {
-    standard_output (logs);
+    standard_output(logs);
   }
   /* curses */
   else {
-    curses_output (logs);
+    curses_output(logs);
   }
 
   /* clean */
 clean:
-  cleanup (ret);
+  cleanup(ret);
 
   return ret ? EXIT_FAILURE : EXIT_SUCCESS;
 }

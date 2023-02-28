@@ -46,117 +46,104 @@
 
 /* *INDENT-OFF* */
 const int sort_choices[][SORT_MAX_OPTS] = {
-  /* VISITORS */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  /* REQUESTS */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, SORT_BY_PROT, SORT_BY_MTHD, -1},
-  /* REQUESTS_STATIC */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, SORT_BY_PROT, SORT_BY_MTHD, -1},
-  /* NOT_FOUND */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, SORT_BY_PROT, SORT_BY_MTHD, -1},
-  /* HOSTS */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  /* OS */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  /* BROWSERS */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  /* VISIT_TIMES */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  /* VIRTUAL_HOSTS */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  /* REFERRERS */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  /* REFERRING_SITES */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  /* KEYPHRASES */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  /* STATUS_CODES */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  /* REMOTE_USER */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  /* CACHE_STATUS */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-#ifdef HAVE_GEOLOCATION
-  /* GEO_LOCATION */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  /* ASN */
-  {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-#endif
-  /* MIME_TYPE */
-  {SORT_BY_HITS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
-  /* TLS_TYPE */
-  {SORT_BY_HITS, SORT_BY_DATA, SORT_BY_VISITORS, SORT_BY_BW, -1},
+    /* VISITORS */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* REQUESTS */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS,
+     SORT_BY_PROT, SORT_BY_MTHD, -1},
+    /* REQUESTS_STATIC */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS,
+     SORT_BY_PROT, SORT_BY_MTHD, -1},
+    /* NOT_FOUND */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS,
+     SORT_BY_PROT, SORT_BY_MTHD, -1},
+    /* HOSTS */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* OS */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* BROWSERS */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* VISIT_TIMES */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* VIRTUAL_HOSTS */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* REFERRERS */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* REFERRING_SITES */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* KEYPHRASES */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* STATUS_CODES */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* REMOTE_USER */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* CACHE_STATUS */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* GEO_LOCATION */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* ASN */
+    {SORT_BY_HITS, SORT_BY_VISITORS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* MIME_TYPE */
+    {SORT_BY_HITS, SORT_BY_DATA, SORT_BY_BW, SORT_BY_AVGTS, SORT_BY_CUMTS, SORT_BY_MAXTS, -1},
+    /* TLS_TYPE */
+    {SORT_BY_HITS, SORT_BY_DATA, SORT_BY_VISITORS, SORT_BY_BW, -1},
 };
 
 static GEnum FIELD[] = {
-  {"BY_HITS"     , SORT_BY_HITS     } ,
-  {"BY_VISITORS" , SORT_BY_VISITORS } ,
-  {"BY_DATA"     , SORT_BY_DATA     } ,
-  {"BY_BW"       , SORT_BY_BW       } ,
-  {"BY_AVGTS"    , SORT_BY_AVGTS    } ,
-  {"BY_CUMTS"    , SORT_BY_CUMTS    } ,
-  {"BY_MAXTS"    , SORT_BY_MAXTS    } ,
-  {"BY_PROT"     , SORT_BY_PROT     } ,
-  {"BY_MTHD"     , SORT_BY_MTHD     } ,
+    {"BY_HITS", SORT_BY_HITS},   {"BY_VISITORS", SORT_BY_VISITORS}, {"BY_DATA", SORT_BY_DATA},
+    {"BY_BW", SORT_BY_BW},       {"BY_AVGTS", SORT_BY_AVGTS},       {"BY_CUMTS", SORT_BY_CUMTS},
+    {"BY_MAXTS", SORT_BY_MAXTS}, {"BY_PROT", SORT_BY_PROT},         {"BY_MTHD", SORT_BY_MTHD},
 };
 
 static GEnum ORDER[] = {
-  {"ASC"  , SORT_ASC  } ,
-  {"DESC" , SORT_DESC } ,
+    {"ASC", SORT_ASC},
+    {"DESC", SORT_DESC},
 };
 
 GSort module_sort[TOTAL_MODULES] = {
-  {VISITORS            , SORT_BY_DATA , SORT_DESC } ,
-  {REQUESTS            , SORT_BY_HITS , SORT_DESC } ,
-  {REQUESTS_STATIC     , SORT_BY_HITS , SORT_DESC } ,
-  {NOT_FOUND           , SORT_BY_HITS , SORT_DESC } ,
-  {HOSTS               , SORT_BY_HITS , SORT_DESC } ,
-  {OS                  , SORT_BY_HITS , SORT_DESC } ,
-  {BROWSERS            , SORT_BY_HITS , SORT_DESC } ,
-  {VISIT_TIMES         , SORT_BY_DATA , SORT_ASC  } ,
-  {VIRTUAL_HOSTS       , SORT_BY_HITS , SORT_DESC } ,
-  {REFERRERS           , SORT_BY_HITS , SORT_DESC } ,
-  {REFERRING_SITES     , SORT_BY_HITS , SORT_DESC } ,
-  {KEYPHRASES          , SORT_BY_HITS , SORT_DESC } ,
-  {STATUS_CODES        , SORT_BY_HITS , SORT_DESC } ,
-  {REMOTE_USER         , SORT_BY_HITS , SORT_DESC } ,
-  {CACHE_STATUS        , SORT_BY_HITS , SORT_DESC } ,
-#ifdef HAVE_GEOLOCATION
-  {GEO_LOCATION        , SORT_BY_HITS , SORT_DESC } ,
-  {ASN                 , SORT_BY_HITS , SORT_DESC } ,
-#endif
-  {MIME_TYPE           , SORT_BY_HITS , SORT_DESC } ,
-  {TLS_TYPE            , SORT_BY_VISITORS , SORT_DESC } ,
+    {VISITORS, SORT_BY_DATA, SORT_DESC},
+    {REQUESTS, SORT_BY_HITS, SORT_DESC},
+    {REQUESTS_STATIC, SORT_BY_HITS, SORT_DESC},
+    {NOT_FOUND, SORT_BY_HITS, SORT_DESC},
+    {HOSTS, SORT_BY_HITS, SORT_DESC},
+    {OS, SORT_BY_HITS, SORT_DESC},
+    {BROWSERS, SORT_BY_HITS, SORT_DESC},
+    {VISIT_TIMES, SORT_BY_DATA, SORT_ASC},
+    {VIRTUAL_HOSTS, SORT_BY_HITS, SORT_DESC},
+    {REFERRERS, SORT_BY_HITS, SORT_DESC},
+    {REFERRING_SITES, SORT_BY_HITS, SORT_DESC},
+    {KEYPHRASES, SORT_BY_HITS, SORT_DESC},
+    {STATUS_CODES, SORT_BY_HITS, SORT_DESC},
+    {REMOTE_USER, SORT_BY_HITS, SORT_DESC},
+    {CACHE_STATUS, SORT_BY_HITS, SORT_DESC},
+    {GEO_LOCATION, SORT_BY_HITS, SORT_DESC},
+    {ASN, SORT_BY_HITS, SORT_DESC},
+    {MIME_TYPE, SORT_BY_HITS, SORT_DESC},
+    {TLS_TYPE, SORT_BY_VISITORS, SORT_DESC},
 };
 /* *INDENT-ON* */
 
 /* Sort an array of strings ascending */
-int
-strcmp_asc (const void *a, const void *b) {
-  return strcmp (*((char *const *) a), *((char *const *) b));
-}
+int strcmp_asc(const void* a, const void* b) { return strcmp(*((char* const*)a), *((char* const*)b)); }
 
 /* Sort 'data' metric ascending */
-static int
-cmp_data_asc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
-  return strcmp (ia->metrics->data, ib->metrics->data);
+static int cmp_data_asc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
+  return strcmp(ia->metrics->data, ib->metrics->data);
 }
 
 /* Sort 'data' metric descending */
-static int
-cmp_data_desc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
-  return strcmp (ib->metrics->data, ia->metrics->data);
+static int cmp_data_desc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
+  return strcmp(ib->metrics->data, ia->metrics->data);
 }
 
 /* Sort 'hits' metric descending */
-static int
-cmp_num_desc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
+static int cmp_num_desc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
 
   uint64_t va = ia->metrics->hits;
   uint64_t vb = ib->metrics->hits;
@@ -165,10 +152,9 @@ cmp_num_desc (const void *a, const void *b) {
 }
 
 /* Sort 'hits' metric ascending */
-static int
-cmp_num_asc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
+static int cmp_num_asc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
 
   uint64_t va = ia->metrics->hits;
   uint64_t vb = ib->metrics->hits;
@@ -177,10 +163,9 @@ cmp_num_asc (const void *a, const void *b) {
 }
 
 /* Sort 'visitors' metric descending */
-static int
-cmp_vis_desc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
+static int cmp_vis_desc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
 
   uint64_t va = ia->metrics->visitors;
   uint64_t vb = ib->metrics->visitors;
@@ -189,10 +174,9 @@ cmp_vis_desc (const void *a, const void *b) {
 }
 
 /* Sort 'visitors' metric ascending */
-static int
-cmp_vis_asc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
+static int cmp_vis_asc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
 
   uint64_t va = ia->metrics->visitors;
   uint64_t vb = ib->metrics->visitors;
@@ -201,10 +185,9 @@ cmp_vis_asc (const void *a, const void *b) {
 }
 
 /* Sort GRawDataItem value descending */
-static int
-cmp_raw_num_desc (const void *a, const void *b) {
-  const GRawDataItem *ia = a;
-  const GRawDataItem *ib = b;
+static int cmp_raw_num_desc(const void* a, const void* b) {
+  const GRawDataItem* ia = a;
+  const GRawDataItem* ib = b;
 
   uint64_t va = ia->hits;
   uint64_t vb = ib->hits;
@@ -213,19 +196,17 @@ cmp_raw_num_desc (const void *a, const void *b) {
 }
 
 /* Sort GRawDataItem value descending */
-static int
-cmp_raw_str_desc (const void *a, const void *b) {
-  const GRawDataItem *ia = a;
-  const GRawDataItem *ib = b;
+static int cmp_raw_str_desc(const void* a, const void* b) {
+  const GRawDataItem* ia = a;
+  const GRawDataItem* ib = b;
 
-  return strcmp (ib->data, ia->data);
+  return strcmp(ib->data, ia->data);
 }
 
 /* Sort 'bandwidth' metric descending */
-static int
-cmp_bw_desc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
+static int cmp_bw_desc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
 
   uint64_t va = ia->metrics->bw.nbw;
   uint64_t vb = ib->metrics->bw.nbw;
@@ -234,10 +215,9 @@ cmp_bw_desc (const void *a, const void *b) {
 }
 
 /* Sort 'bandwidth' metric ascending */
-static int
-cmp_bw_asc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
+static int cmp_bw_asc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
 
   uint64_t va = ia->metrics->bw.nbw;
   uint64_t vb = ib->metrics->bw.nbw;
@@ -246,10 +226,9 @@ cmp_bw_asc (const void *a, const void *b) {
 }
 
 /* Sort 'avgts' metric descending */
-static int
-cmp_avgts_desc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
+static int cmp_avgts_desc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
 
   uint64_t va = ia->metrics->avgts.nts;
   uint64_t vb = ib->metrics->avgts.nts;
@@ -258,10 +237,9 @@ cmp_avgts_desc (const void *a, const void *b) {
 }
 
 /* Sort 'avgts' metric ascending */
-static int
-cmp_avgts_asc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
+static int cmp_avgts_asc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
 
   uint64_t va = ia->metrics->avgts.nts;
   uint64_t vb = ib->metrics->avgts.nts;
@@ -270,10 +248,9 @@ cmp_avgts_asc (const void *a, const void *b) {
 }
 
 /* Sort 'cumts' metric descending */
-static int
-cmp_cumts_desc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
+static int cmp_cumts_desc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
 
   uint64_t va = ia->metrics->cumts.nts;
   uint64_t vb = ib->metrics->cumts.nts;
@@ -282,10 +259,9 @@ cmp_cumts_desc (const void *a, const void *b) {
 }
 
 /* Sort 'cumts' metric ascending */
-static int
-cmp_cumts_asc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
+static int cmp_cumts_asc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
 
   uint64_t va = ia->metrics->cumts.nts;
   uint64_t vb = ib->metrics->cumts.nts;
@@ -294,10 +270,9 @@ cmp_cumts_asc (const void *a, const void *b) {
 }
 
 /* Sort 'maxts' metric descending */
-static int
-cmp_maxts_desc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
+static int cmp_maxts_desc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
 
   uint64_t va = ia->metrics->maxts.nts;
   uint64_t vb = ib->metrics->maxts.nts;
@@ -306,10 +281,9 @@ cmp_maxts_desc (const void *a, const void *b) {
 }
 
 /* Sort 'maxts' metric ascending */
-static int
-cmp_maxts_asc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
+static int cmp_maxts_asc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
 
   uint64_t va = ia->metrics->maxts.nts;
   uint64_t vb = ib->metrics->maxts.nts;
@@ -318,35 +292,31 @@ cmp_maxts_asc (const void *a, const void *b) {
 }
 
 /* Sort 'protocol' metric ascending */
-static int
-cmp_proto_asc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
-  return strcmp (ia->metrics->protocol, ib->metrics->protocol);
+static int cmp_proto_asc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
+  return strcmp(ia->metrics->protocol, ib->metrics->protocol);
 }
 
 /* Sort 'protocol' metric descending */
-static int
-cmp_proto_desc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
-  return strcmp (ib->metrics->protocol, ia->metrics->protocol);
+static int cmp_proto_desc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
+  return strcmp(ib->metrics->protocol, ia->metrics->protocol);
 }
 
 /* Sort 'method' metric ascending */
-static int
-cmp_mthd_asc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
-  return strcmp (ia->metrics->method, ib->metrics->method);
+static int cmp_mthd_asc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
+  return strcmp(ia->metrics->method, ib->metrics->method);
 }
 
 /* Sort 'method' metric descending */
-static int
-cmp_mthd_desc (const void *a, const void *b) {
-  const GHolderItem *ia = a;
-  const GHolderItem *ib = b;
-  return strcmp (ib->metrics->method, ia->metrics->method);
+static int cmp_mthd_desc(const void* a, const void* b) {
+  const GHolderItem* ia = a;
+  const GHolderItem* ib = b;
+  return strcmp(ib->metrics->method, ia->metrics->method);
 }
 
 /* Sort ascending */
@@ -354,15 +324,14 @@ cmp_mthd_desc (const void *a, const void *b) {
 __attribute__((no_sanitize ("implicit-conversion", "unsigned-integer-overflow")))
 #endif
   int cmp_ui32_asc (const void *a, const void *b) {
-  const uint32_t *ia = (const uint32_t *) a;    // casting pointer types
-  const uint32_t *ib = (const uint32_t *) b;
+  const uint32_t* ia = (const uint32_t*)a; // casting pointer types
+  const uint32_t* ib = (const uint32_t*)b;
   return *ia - *ib;
-  }
+}
 
-int
-cmp_ui32_desc (const void *a, const void *b) {
-  const uint32_t *ia = (const uint32_t *) a;    // casting pointer types
-  const uint32_t *ib = (const uint32_t *) b;
+int cmp_ui32_desc(const void* a, const void* b) {
+  const uint32_t* ia = (const uint32_t*)a; // casting pointer types
+  const uint32_t* ib = (const uint32_t*)b;
   return *ib - *ia;
 }
 
@@ -370,51 +339,32 @@ cmp_ui32_desc (const void *a, const void *b) {
  *
  * On error, -1 is returned.
  * On success, the enumerated field value is returned. */
-int
-get_sort_field_enum (const char *str) {
-  return str2enum (FIELD, ARRAY_SIZE (FIELD), str);
-}
+int get_sort_field_enum(const char* str) { return str2enum(FIELD, ARRAY_SIZE(FIELD), str); }
 
 /* Given a string sort order, get the enum order value.
  *
  * On error, -1 is returned.
  * On success, the enumerated order value is returned. */
-int
-get_sort_order_enum (const char *str) {
-  return str2enum (ORDER, ARRAY_SIZE (ORDER), str);
-}
+int get_sort_order_enum(const char* str) { return str2enum(ORDER, ARRAY_SIZE(ORDER), str); }
 
 /* Given a GSortOrder enum value, return the corresponding string.
  *
  * The string corresponding to the enumerated order value is returned. */
-const char *
-get_sort_order_str (GSortOrder order) {
-  return ORDER[order].str;
-}
+const char* get_sort_order_str(GSortOrder order) { return ORDER[order].str; }
 
 /* Given a GSortField enum value, return the corresponding string.
  *
  * The string corresponding to the enumerated field value is returned. */
-const char *
-get_sort_field_str (GSortField field) {
-  return FIELD[field].str;
-}
+const char* get_sort_field_str(GSortField field) { return FIELD[field].str; }
 
 /* Given a GSortField enum value, return the corresponding key.
  *
  * The key corresponding to the enumerated field value is returned. */
-const char *
-get_sort_field_key (GSortField field) {
-  static const char *field2key[][2] = {
-    {"BY_HITS", "hits"},
-    {"BY_VISITORS", "visitors"},
-    {"BY_DATA", "data"},
-    {"BY_BW", "bytes"},
-    {"BY_AVGTS", "avgts"},
-    {"BY_CUMTS", "cumts"},
-    {"BY_MAXTS", "maxts"},
-    {"BY_PROT", "protocol"},
-    {"BY_MTHD", "method"},
+const char* get_sort_field_key(GSortField field) {
+  static const char* field2key[][2] = {
+      {"BY_HITS", "hits"},   {"BY_VISITORS", "visitors"}, {"BY_DATA", "data"},
+      {"BY_BW", "bytes"},    {"BY_AVGTS", "avgts"},       {"BY_CUMTS", "cumts"},
+      {"BY_MAXTS", "maxts"}, {"BY_PROT", "protocol"},     {"BY_MTHD", "method"},
   };
 
   return field2key[field][1];
@@ -424,17 +374,16 @@ get_sort_field_key (GSortField field) {
  *
  * On error, function returns.
  * On success, panel metrics are sorted. */
-void
-set_initial_sort (const char *smod, const char *sfield, const char *ssort) {
+void set_initial_sort(const char* smod, const char* sfield, const char* ssort) {
   int module, field, order;
-  if ((module = get_module_enum (smod)) == -1)
+  if ((module = get_module_enum(smod)) == -1)
     return;
 
-  if ((field = get_sort_field_enum (sfield)) == -1)
+  if ((field = get_sort_field_enum(sfield)) == -1)
     return;
-  if ((order = get_sort_order_enum (ssort)) == -1)
+  if ((order = get_sort_order_enum(ssort)) == -1)
     return;
-  if (!can_sort_module (module, field))
+  if (!can_sort_module(module, field))
     return;
 
   module_sort[module].field = field;
@@ -445,8 +394,7 @@ set_initial_sort (const char *smod, const char *sfield, const char *ssort) {
  *
  * On error or if metric can't be sorted, 0 is returned.
  * On success, 1 is returned. */
-int
-can_sort_module (GModule module, int field) {
+int can_sort_module(GModule module, int field) {
   int i, can_sort = 0;
   for (i = 0; -1 != sort_choices[module][i]; i++) {
     if (sort_choices[module][i] != field)
@@ -475,74 +423,72 @@ can_sort_module (GModule module, int field) {
  *
  * On error, function returns.
  * On success, panel metrics are sorted. */
-void
-parse_initial_sort (void) {
+void parse_initial_sort(void) {
   int i;
   char module[SORT_MODULE_LEN], field[SORT_FIELD_LEN], order[SORT_ORDER_LEN];
   for (i = 0; i < conf.sort_panel_idx; ++i) {
-    if (sscanf (conf.sort_panels[i], "%15[^','],%11[^','],%4s", module, field, order) != 3)
+    if (sscanf(conf.sort_panels[i], "%15[^','],%11[^','],%4s", module, field, order) != 3)
       continue;
-    set_initial_sort (module, field, order);
+    set_initial_sort(module, field, order);
   }
 }
 
 /* Apply user defined sort */
-void
-sort_holder_items (GHolderItem * items, int size, GSort sort) {
+void sort_holder_items(GHolderItem* items, int size, GSort sort) {
   switch (sort.field) {
   case SORT_BY_HITS:
     if (sort.sort == SORT_DESC)
-      qsort (items, size, sizeof (GHolderItem), cmp_num_desc);
+      qsort(items, size, sizeof(GHolderItem), cmp_num_desc);
     else
-      qsort (items, size, sizeof (GHolderItem), cmp_num_asc);
+      qsort(items, size, sizeof(GHolderItem), cmp_num_asc);
     break;
   case SORT_BY_VISITORS:
     if (sort.sort == SORT_DESC)
-      qsort (items, size, sizeof (GHolderItem), cmp_vis_desc);
+      qsort(items, size, sizeof(GHolderItem), cmp_vis_desc);
     else
-      qsort (items, size, sizeof (GHolderItem), cmp_vis_asc);
+      qsort(items, size, sizeof(GHolderItem), cmp_vis_asc);
     break;
   case SORT_BY_DATA:
     if (sort.sort == SORT_DESC)
-      qsort (items, size, sizeof (GHolderItem), cmp_data_desc);
+      qsort(items, size, sizeof(GHolderItem), cmp_data_desc);
     else
-      qsort (items, size, sizeof (GHolderItem), cmp_data_asc);
+      qsort(items, size, sizeof(GHolderItem), cmp_data_asc);
     break;
   case SORT_BY_BW:
     if (sort.sort == SORT_DESC)
-      qsort (items, size, sizeof (GHolderItem), cmp_bw_desc);
+      qsort(items, size, sizeof(GHolderItem), cmp_bw_desc);
     else
-      qsort (items, size, sizeof (GHolderItem), cmp_bw_asc);
+      qsort(items, size, sizeof(GHolderItem), cmp_bw_asc);
     break;
   case SORT_BY_AVGTS:
     if (sort.sort == SORT_DESC)
-      qsort (items, size, sizeof (GHolderItem), cmp_avgts_desc);
+      qsort(items, size, sizeof(GHolderItem), cmp_avgts_desc);
     else
-      qsort (items, size, sizeof (GHolderItem), cmp_avgts_asc);
+      qsort(items, size, sizeof(GHolderItem), cmp_avgts_asc);
     break;
   case SORT_BY_CUMTS:
     if (sort.sort == SORT_DESC)
-      qsort (items, size, sizeof (GHolderItem), cmp_cumts_desc);
+      qsort(items, size, sizeof(GHolderItem), cmp_cumts_desc);
     else
-      qsort (items, size, sizeof (GHolderItem), cmp_cumts_asc);
+      qsort(items, size, sizeof(GHolderItem), cmp_cumts_asc);
     break;
   case SORT_BY_MAXTS:
     if (sort.sort == SORT_DESC)
-      qsort (items, size, sizeof (GHolderItem), cmp_maxts_desc);
+      qsort(items, size, sizeof(GHolderItem), cmp_maxts_desc);
     else
-      qsort (items, size, sizeof (GHolderItem), cmp_maxts_asc);
+      qsort(items, size, sizeof(GHolderItem), cmp_maxts_asc);
     break;
   case SORT_BY_PROT:
     if (sort.sort == SORT_DESC)
-      qsort (items, size, sizeof (GHolderItem), cmp_proto_desc);
+      qsort(items, size, sizeof(GHolderItem), cmp_proto_desc);
     else
-      qsort (items, size, sizeof (GHolderItem), cmp_proto_asc);
+      qsort(items, size, sizeof(GHolderItem), cmp_proto_asc);
     break;
   case SORT_BY_MTHD:
     if (sort.sort == SORT_DESC)
-      qsort (items, size, sizeof (GHolderItem), cmp_mthd_desc);
+      qsort(items, size, sizeof(GHolderItem), cmp_mthd_desc);
     else
-      qsort (items, size, sizeof (GHolderItem), cmp_mthd_asc);
+      qsort(items, size, sizeof(GHolderItem), cmp_mthd_asc);
     break;
   }
 }
@@ -551,17 +497,15 @@ sort_holder_items (GHolderItem * items, int size, GSort sort) {
  * (default sort)
  *
  * On success, raw data sorted in a descending order. */
-GRawData *
-sort_raw_num_data (GRawData * raw_data, int ht_size) {
-  qsort (raw_data->items, ht_size, sizeof *(raw_data->items), cmp_raw_num_desc);
+GRawData* sort_raw_num_data(GRawData* raw_data, int ht_size) {
+  qsort(raw_data->items, ht_size, sizeof *(raw_data->items), cmp_raw_num_desc);
   return raw_data;
 }
 
 /* Sort raw string data in a descending order for the first run.
  *
  * On success, raw data sorted in a descending order. */
-GRawData *
-sort_raw_str_data (GRawData * raw_data, int ht_size) {
-  qsort (raw_data->items, ht_size, sizeof *(raw_data->items), cmp_raw_str_desc);
+GRawData* sort_raw_str_data(GRawData* raw_data, int ht_size) {
+  qsort(raw_data->items, ht_size, sizeof *(raw_data->items), cmp_raw_str_desc);
   return raw_data;
 }
