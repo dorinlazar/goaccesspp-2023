@@ -1,3 +1,5 @@
+#include <array>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +20,8 @@ time_t timestamp;
 time_t start_proc;
 
 /* list of available modules/panels */
-int module_list[TOTAL_MODULES] = {[0 ... TOTAL_MODULES - 1] = -1};
+std::array<int, TOTAL_MODULES> module_list = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                                              -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
 /* *INDENT-OFF* */
 /* String modules to enumerated modules */
@@ -167,10 +170,10 @@ char* get_module_str(GModule module) { return enum2str(enum_modules, ARRAY_SIZE(
  *
  * On success, the newly malloc'd structure is returned. */
 GAgents* new_gagents(uint32_t size) {
-  GAgents* agents = xmalloc(sizeof(GAgents));
+  GAgents* agents = cppalloc<GAgents>();
   memset(agents, 0, sizeof *agents);
 
-  agents->items = xcalloc(size, sizeof(GAgentItem));
+  agents->items = cppalloc<GAgentItem>(size);
   agents->size = size;
   agents->idx = 0;
 
@@ -343,16 +346,6 @@ void verify_panels(void) {
     if (str_inarray("TLS_TYPE", conf.ignore_panels, ignore_panel_idx) < 0)
       remove_module(TLS_TYPE);
   }
-#ifdef HAVE_LIBMAXMINDDB
-  if (!conf.geoip_db_idx && ignore_panel_idx < TOTAL_MODULES) {
-    if (str_inarray("GEO_LOCATION", conf.ignore_panels, ignore_panel_idx) < 0)
-      remove_module(GEO_LOCATION);
-  }
-  if (!conf.geoip_db_idx && ignore_panel_idx < TOTAL_MODULES) {
-    if (str_inarray("ASN", conf.ignore_panels, ignore_panel_idx) < 0)
-      remove_module(ASN);
-  }
-#endif
 }
 
 /* Build an array of available modules (ignores listed panels).
@@ -360,7 +353,7 @@ void verify_panels(void) {
  * If there are no modules enabled, 0 is returned.
  * On success, the first enabled module is returned. */
 int init_modules(void) {
-  GModule module;
+  int module;
   int i;
 
   /* init - terminating with -1 */
@@ -368,7 +361,7 @@ int init_modules(void) {
     module_list[module] = -1;
 
   for (i = 0, module = 0; module < TOTAL_MODULES; ++module) {
-    if (!ignore_panel(module) || enable_panel(module)) {
+    if (!ignore_panel(static_cast<GModule>(module)) || enable_panel(static_cast<GModule>(module))) {
       module_list[i++] = module;
     }
   }

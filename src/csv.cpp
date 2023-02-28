@@ -280,7 +280,7 @@ static void print_csv_summary(FILE* fp) {
 
 /* Entry point to generate a a csv report writing it to the fp */
 void output_csv(GHolder* holder, const char* filename) {
-  GModule module;
+  int module;
   GPercTotals totals;
   const GPanel* panel = NULL;
   size_t idx = 0;
@@ -298,7 +298,7 @@ void output_csv(GHolder* holder, const char* filename) {
   FOREACH_MODULE(idx, module_list) {
     module = module_list[idx];
 
-    if (!(panel = panel_lookup(module))) {
+    if (!(panel = panel_lookup(static_cast<GModule>(module)))) {
       continue;
     }
 
