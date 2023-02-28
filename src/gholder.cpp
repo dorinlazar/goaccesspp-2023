@@ -1,33 +1,3 @@
-/**
- * gholder.c -- data structure to hold raw data
- *    ______      ___
- *   / ____/___  /   | _____________  __________
- *  / / __/ __ \/ /| |/ ___/ ___/ _ \/ ___/ ___/
- * / /_/ / /_/ / ___ / /__/ /__/  __(__  |__  )
- * \____/\____/_/  |_\___/\___/\___/____/____/
- *
- * The MIT License (MIT)
- * Copyright (c) 2009-2022 Gerardo Orellana <hello @ goaccess.io>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,7 +22,6 @@ typedef struct GPanel_ {
   void (*holder_callback)(GHolder* h);
 } GPanel;
 
-/* *INDENT-OFF* */
 static void add_data_to_holder(GRawDataItem item, GHolder* h, datatype type, const GPanel* panel);
 static void add_host_to_holder(GRawDataItem item, GHolder* h, datatype type, const GPanel* panel);
 static void add_root_to_holder(GRawDataItem item, GHolder* h, datatype type, const GPanel* panel);
@@ -79,7 +48,6 @@ static GPanel paneling[] = {
     {MIME_TYPE, add_root_to_holder, NULL},
     {TLS_TYPE, add_root_to_holder, NULL},
 };
-/* *INDENT-ON* */
 
 /* Get a panel from the GPanel structure given a module.
  *
@@ -99,7 +67,7 @@ static GPanel* panel_lookup(GModule module) {
  *
  * On success, the newly allocated GHolder is returned . */
 GHolder* new_gholder(uint32_t size) {
-  GHolder* holder = xmalloc(size * sizeof(GHolder));
+  GHolder* holder = cppalloc<GHolder>(size);
   memset(holder, 0, size * sizeof *holder);
 
   return holder;
@@ -109,7 +77,7 @@ GHolder* new_gholder(uint32_t size) {
  *
  * On success, the newly allocated GHolderItem is returned . */
 static GHolderItem* new_gholder_item(uint32_t size) {
-  GHolderItem* item = xcalloc(size, sizeof(GHolderItem));
+  GHolderItem* item = cppalloc<GHolderItem>(size);
 
   return item;
 }
@@ -118,7 +86,7 @@ static GHolderItem* new_gholder_item(uint32_t size) {
  *
  * On success, the newly allocated GSubList is returned . */
 static GSubList* new_gsublist(void) {
-  GSubList* sub_list = xmalloc(sizeof(GSubList));
+  GSubList* sub_list = cppalloc<GSubList>();
   sub_list->head = NULL;
   sub_list->tail = NULL;
   sub_list->size = 0;
@@ -130,7 +98,7 @@ static GSubList* new_gsublist(void) {
  *
  * On success, the newly allocated GSubItem is returned . */
 static GSubItem* new_gsubitem(GModule module, GMetrics* nmetrics) {
-  GSubItem* sub_item = xmalloc(sizeof(GSubItem));
+  GSubItem* sub_item = cppalloc<GSubItem>();
 
   sub_item->metrics = nmetrics;
   sub_item->module = module;
@@ -200,7 +168,7 @@ void free_holder_by_module(GHolder** holder, GModule module) {
 
 /* Free all memory allocated in holder for all modules. */
 void free_holder(GHolder** holder) {
-  GModule module;
+  int module;
   int j;
   size_t idx = 0;
 
