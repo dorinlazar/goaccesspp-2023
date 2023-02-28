@@ -1,47 +1,9 @@
-/**
- * ui.c -- various curses interfaces
- *    ______      ___
- *   / ____/___  /   | _____________  __________
- *  / / __/ __ \/ /| |/ ___/ ___/ _ \/ ___/ ___/
- * / /_/ / /_/ / ___ / /__/ /__/  __(__  |__  )
- * \____/\____/_/  |_\___/\___/\___/____/____/
- *
- * The MIT License (MIT)
- * Copyright (c) 2009-2022 Gerardo Orellana <hello @ goaccess.io>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-#define _LARGEFILE_SOURCE
-#define _LARGEFILE64_SOURCE
-#define _FILE_OFFSET_BITS 64
-
 #define STDIN_FILENO 0
 #ifndef _BSD_SOURCE
 #define _BSD_SOURCE /* include stuff from 4.3 BSD */
 #endif
 #ifndef _DEFAULT_SOURCE
 #define _DEFAULT_SOURCE
-#endif
-
-#if HAVE_CONFIG_H
-#include <config.h>
 #endif
 
 #include <pthread.h>
@@ -215,7 +177,7 @@ void draw_header(WINDOW* win, const char* s, const char* fmt, int y, int x, int 
   GColors* color = (*func)();
   char* buf;
 
-  buf = xmalloc(snprintf(NULL, 0, fmt, s) + 1);
+  buf = cppalloc<char>(snprintf(NULL, 0, fmt, s) + 1);
   sprintf(buf, fmt, s);
 
   wattron(win, color->attr | COLOR_PAIR(color->pair->idx));
@@ -309,7 +271,7 @@ void update_active_module(WINDOW* header_win, GModule current) {
   const char* module = module_to_label(current);
   int col = getmaxx(stdscr);
 
-  char* lbl = xmalloc(snprintf(NULL, 0, T_ACTIVE_PANEL, module) + 1);
+  char* lbl = cppalloc<char>(snprintf(NULL, 0, T_ACTIVE_PANEL, module) + 1);
   sprintf(lbl, T_ACTIVE_PANEL, module);
 
   wmove(header_win, 0, 30);
@@ -391,7 +353,7 @@ static char* get_str_proctime(void) {
   char* s = NULL;
   uint32_t secs = ht_get_processing_time();
 
-  s = xmalloc(snprintf(NULL, 0, "%us", secs) + 1);
+  s = cppalloc<char>(snprintf(NULL, 0, "%us", secs) + 1);
   sprintf(s, "%us", secs);
 
   return s;
@@ -450,7 +412,7 @@ char* get_overall_header(GHolder* h) {
   if (h->idx == 0 || get_start_end_parsing_dates(&start, &end, "%d/%b/%Y"))
     return xstrdup(head);
 
-  hd = xmalloc(snprintf(NULL, 0, "%s (%s - %s)", head, start, end) + 1);
+  hd = cppalloc<char>(snprintf(NULL, 0, "%s (%s - %s)", head, start, end) + 1);
   sprintf(hd, "%s (%s - %s)", head, start, end);
 
   free(end);
@@ -551,7 +513,7 @@ void display_general(WINDOW* win, GHolder* h) {
 }
 
 static char* set_default_string(WINDOW* win, int pos_y, int pos_x, size_t max_width, const char* str) {
-  char *s = xmalloc(max_width + 1), *tmp;
+  char *s = cppalloc<char>(max_width + 1), *tmp;
   size_t len = 0;
   size_t size_x = 0, size_y = 0;
   getmaxyx(win, size_y, size_x);
@@ -707,7 +669,7 @@ char* input_string(WINDOW* win, int pos_y, int pos_x, size_t max_width, const ch
  * On error, 1 is returned.
  * On success, the user agent is added to the array and 0 is returned. */
 static int set_agents(void* val, void* user_data) {
-  GAgents* agents = user_data;
+  GAgents* agents = (GAgents*)user_data;
   GAgentItem* tmp = NULL;
   char* agent = NULL;
   int newlen = 0, i;
@@ -717,7 +679,7 @@ static int set_agents(void* val, void* user_data) {
 
   if (agents->size - 1 == agents->idx) {
     newlen = agents->size + 4;
-    if (!(tmp = realloc(agents->items, newlen * sizeof(GAgentItem))))
+    if (!(tmp = (GAgentItem*)realloc(agents->items, newlen * sizeof(GAgentItem))))
       FATAL("Unable to realloc agents");
 
     agents->items = tmp;
@@ -769,7 +731,7 @@ static int fill_host_agents_gmenu(GMenu* menu, GAgents* agents) {
   if (agents == NULL)
     return 1;
 
-  menu->items = xcalloc(agents->idx, sizeof(GItem));
+  menu->items = cppalloc<GItem>(agents->idx);
   for (i = 0; i < agents->idx; ++i) {
     menu->items[i].name = xstrdup(agents->items[i].agent);
     menu->items[i].checked = 0;
@@ -844,7 +806,7 @@ out:
 }
 
 /* Render the processing spinner. This runs within its own thread. */
-static void ui_spinner(void* ptr_data) {
+static void* ui_spinner(void* ptr_data) {
   GSpinner* sp = (GSpinner*)ptr_data;
   GColors* color = NULL;
 
@@ -867,7 +829,7 @@ static void ui_spinner(void* ptr_data) {
         fprintf(stderr, "\n");
 
       pthread_mutex_unlock(&sp->mutex);
-      return;
+      return nullptr;
     }
 
     setlocale(LC_NUMERIC, "");
@@ -898,6 +860,7 @@ static void ui_spinner(void* ptr_data) {
     if (nanosleep(&ts, NULL) == -1 && errno != EINTR)
       FATAL("nanosleep: %s", strerror(errno));
   }
+  return nullptr;
 }
 
 /* Create the processing spinner's thread */
@@ -905,7 +868,7 @@ void ui_spinner_create(GSpinner* spinner) {
   if (conf.no_parsing_spinner)
     return;
 
-  pthread_create(&(spinner->thread), NULL, (void*)&ui_spinner, spinner);
+  pthread_create(&(spinner->thread), NULL, &ui_spinner, spinner);
   pthread_detach(spinner->thread);
 }
 
@@ -944,7 +907,7 @@ void unlock_spinner(void) {
 GSpinner* new_gspinner(void) {
   GSpinner* spinner;
 
-  spinner = xcalloc(1, sizeof(GSpinner));
+  spinner = cppalloc<GSpinner>();
   spinner->label = "Parsing...";
   spinner->state = SPN_RUN;
   spinner->curses = 0;
@@ -1365,7 +1328,7 @@ static void scheme_chosen(const char* name) {
 static const char** get_color_schemes(size_t* size) {
   const char* choices[] = {"Monokai", "Monochrome", "Green", "Custom Scheme"};
   int i, j, n = ARRAY_SIZE(choices);
-  const char** opts = xmalloc(sizeof(char*) * n);
+  const char** opts = cppalloc<const char*>(n);
 
   for (i = 0, j = 0; i < n; ++i) {
     if (!conf.color_idx && !strcmp("Custom Scheme", choices[i]))
@@ -1462,7 +1425,7 @@ void load_sort_win(WINDOW* main_win, GModule module, GSort* sort) {
 
   /* determine amount of sort choices */
   for (i = 0, k = 0; -1 != sort_choices[module][i]; i++) {
-    GSortField field = sort_choices[module][i];
+    GSortField field = (GSortField)sort_choices[module][i];
     if (SORT_BY_CUMTS == field && !conf.serve_usecs)
       continue;
     else if (SORT_BY_MAXTS == field && !conf.serve_usecs)
@@ -1493,7 +1456,7 @@ void load_sort_win(WINDOW* main_win, GModule module, GSort* sort) {
 
   /* set choices, checked option and index */
   for (i = 0; i < n; ++i) {
-    GSortField field = sort_choices[module][opts[i]];
+    GSortField field = (GSortField)sort_choices[module][opts[i]];
     if (SORT_BY_HITS == field) {
       menu->items[i].name = alloc_string(MTRC_HITS_LBL);
       if (sort->field == SORT_BY_HITS) {

@@ -92,22 +92,22 @@ int strcmp_asc(const void* a, const void* b) { return strcmp(*((char* const*)a),
 
 /* Sort 'data' metric ascending */
 static int cmp_data_asc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
   return strcmp(ia->metrics->data, ib->metrics->data);
 }
 
 /* Sort 'data' metric descending */
 static int cmp_data_desc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
   return strcmp(ib->metrics->data, ia->metrics->data);
 }
 
 /* Sort 'hits' metric descending */
 static int cmp_num_desc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
 
   uint64_t va = ia->metrics->hits;
   uint64_t vb = ib->metrics->hits;
@@ -117,8 +117,8 @@ static int cmp_num_desc(const void* a, const void* b) {
 
 /* Sort 'hits' metric ascending */
 static int cmp_num_asc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
 
   uint64_t va = ia->metrics->hits;
   uint64_t vb = ib->metrics->hits;
@@ -128,8 +128,8 @@ static int cmp_num_asc(const void* a, const void* b) {
 
 /* Sort 'visitors' metric descending */
 static int cmp_vis_desc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
 
   uint64_t va = ia->metrics->visitors;
   uint64_t vb = ib->metrics->visitors;
@@ -139,8 +139,8 @@ static int cmp_vis_desc(const void* a, const void* b) {
 
 /* Sort 'visitors' metric ascending */
 static int cmp_vis_asc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
 
   uint64_t va = ia->metrics->visitors;
   uint64_t vb = ib->metrics->visitors;
@@ -150,8 +150,8 @@ static int cmp_vis_asc(const void* a, const void* b) {
 
 /* Sort GRawDataItem value descending */
 static int cmp_raw_num_desc(const void* a, const void* b) {
-  const GRawDataItem* ia = a;
-  const GRawDataItem* ib = b;
+  const GRawDataItem* ia = (const GRawDataItem*)a;
+  const GRawDataItem* ib = (const GRawDataItem*)b;
 
   uint64_t va = ia->hits;
   uint64_t vb = ib->hits;
@@ -161,16 +161,16 @@ static int cmp_raw_num_desc(const void* a, const void* b) {
 
 /* Sort GRawDataItem value descending */
 static int cmp_raw_str_desc(const void* a, const void* b) {
-  const GRawDataItem* ia = a;
-  const GRawDataItem* ib = b;
+  const GRawDataItem* ia = (const GRawDataItem*)a;
+  const GRawDataItem* ib = (const GRawDataItem*)b;
 
   return strcmp(ib->data, ia->data);
 }
 
 /* Sort 'bandwidth' metric descending */
 static int cmp_bw_desc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
 
   uint64_t va = ia->metrics->bw.nbw;
   uint64_t vb = ib->metrics->bw.nbw;
@@ -180,8 +180,8 @@ static int cmp_bw_desc(const void* a, const void* b) {
 
 /* Sort 'bandwidth' metric ascending */
 static int cmp_bw_asc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
 
   uint64_t va = ia->metrics->bw.nbw;
   uint64_t vb = ib->metrics->bw.nbw;
@@ -191,8 +191,8 @@ static int cmp_bw_asc(const void* a, const void* b) {
 
 /* Sort 'avgts' metric descending */
 static int cmp_avgts_desc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
 
   uint64_t va = ia->metrics->avgts.nts;
   uint64_t vb = ib->metrics->avgts.nts;
@@ -202,8 +202,8 @@ static int cmp_avgts_desc(const void* a, const void* b) {
 
 /* Sort 'avgts' metric ascending */
 static int cmp_avgts_asc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
 
   uint64_t va = ia->metrics->avgts.nts;
   uint64_t vb = ib->metrics->avgts.nts;
@@ -213,8 +213,8 @@ static int cmp_avgts_asc(const void* a, const void* b) {
 
 /* Sort 'cumts' metric descending */
 static int cmp_cumts_desc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
 
   uint64_t va = ia->metrics->cumts.nts;
   uint64_t vb = ib->metrics->cumts.nts;
@@ -224,8 +224,8 @@ static int cmp_cumts_desc(const void* a, const void* b) {
 
 /* Sort 'cumts' metric ascending */
 static int cmp_cumts_asc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
 
   uint64_t va = ia->metrics->cumts.nts;
   uint64_t vb = ib->metrics->cumts.nts;
@@ -235,8 +235,8 @@ static int cmp_cumts_asc(const void* a, const void* b) {
 
 /* Sort 'maxts' metric descending */
 static int cmp_maxts_desc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
 
   uint64_t va = ia->metrics->maxts.nts;
   uint64_t vb = ib->metrics->maxts.nts;
@@ -246,8 +246,8 @@ static int cmp_maxts_desc(const void* a, const void* b) {
 
 /* Sort 'maxts' metric ascending */
 static int cmp_maxts_asc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
 
   uint64_t va = ia->metrics->maxts.nts;
   uint64_t vb = ib->metrics->maxts.nts;
@@ -257,29 +257,29 @@ static int cmp_maxts_asc(const void* a, const void* b) {
 
 /* Sort 'protocol' metric ascending */
 static int cmp_proto_asc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
   return strcmp(ia->metrics->protocol, ib->metrics->protocol);
 }
 
 /* Sort 'protocol' metric descending */
 static int cmp_proto_desc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
   return strcmp(ib->metrics->protocol, ia->metrics->protocol);
 }
 
 /* Sort 'method' metric ascending */
 static int cmp_mthd_asc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
   return strcmp(ia->metrics->method, ib->metrics->method);
 }
 
 /* Sort 'method' metric descending */
 static int cmp_mthd_desc(const void* a, const void* b) {
-  const GHolderItem* ia = a;
-  const GHolderItem* ib = b;
+  const GHolderItem* ia = (const GHolderItem*)a;
+  const GHolderItem* ib = (const GHolderItem*)b;
   return strcmp(ib->metrics->method, ia->metrics->method);
 }
 
@@ -347,11 +347,11 @@ void set_initial_sort(const char* smod, const char* sfield, const char* ssort) {
     return;
   if ((order = get_sort_order_enum(ssort)) == -1)
     return;
-  if (!can_sort_module(module, field))
+  if (!can_sort_module((GModule)module, field))
     return;
 
-  module_sort[module].field = field;
-  module_sort[module].sort = order;
+  module_sort[module].field = (GSortField)field;
+  module_sort[module].sort = (GSortOrder)order;
 }
 
 /* Determine if module/panel metric can be sorted.

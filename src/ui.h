@@ -141,6 +141,8 @@ typedef struct GScroll_ {
   int expanded;
 } GScroll;
 
+enum SpinnerState { SPN_RUN, SPN_END };
+
 /* Spinner or Progress Indicator */
 typedef struct GSpinner_ {
   const char* label;
@@ -155,7 +157,7 @@ typedef struct GSpinner_ {
   uint64_t** processed;
   char** filename;
   WINDOW* win;
-  enum { SPN_RUN, SPN_END } state;
+  SpinnerState state;
 } GSpinner;
 
 /* Controls metric output.
