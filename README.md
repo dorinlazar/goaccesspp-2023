@@ -1,1 +1,7 @@
-# goaccesspp-2023
+# Rationale of goaccesspp existance
+
+This repository starts from commit b2aaedd66e94af5f6d7465ee6975df84e06e6138 on <https://github.com/allinurl/goaccess>.
+
+The reason this is not a fork is because a lot of the changes we'll make will be thoroughly destructive in nature. There are features and ports that will be removed, compilation options gone, choices made. This will result, I hope, in a clearer, cleaner code that can be worked with. My previous effort was documented here: <https://dorinlazar.ro//220710-trying-to-modernize-goaccess.en/> - however, a surge on popularity for that article reminded me that I really wanted to do this properly. I hope I'll make it in the end. The last time I was a bit overwhelmed by the effort. The previous effort can still be seen at <https://github.com/dorinlazar/goaccesspp-2022>.
+
+Why, though? First of all, as an exercise, second of all, because I'm interested in actually developing further, with more stuff, goaccess, but I need to be able to reason about its code. Another way to do this is to just go ahead and write something similar in Rust or python - with python being the serious choice, and Rust being the „omgimsotrendy” choice. But that being said, I still like C++ a lot, and I don't see any good reason for the time being not to write it in C++. And, if I actually will manage to do this properly, it'll show that C++ can have nice and clean code-bases, and safe as well, despite what the fearmongers say about it. So my repo is in many ways an exercise in futility.
