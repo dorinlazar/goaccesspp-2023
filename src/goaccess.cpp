@@ -664,12 +664,12 @@ static void fast_forward_client(int listener) {
 
 /* Start reading data coming from the client side through the
  * WebSocket server. */
-void read_client(void* ptr_data) {
+void* read_client(void* ptr_data) {
   GWSReader* reader = (GWSReader*)ptr_data;
 
   /* check we have a fifo for reading */
   if (reader->fd == -1)
-    return;
+    return nullptr;
 
   pthread_mutex_lock(&reader->mutex);
   set_self_pipe(reader->self_pipe);
@@ -681,6 +681,7 @@ void read_client(void* ptr_data) {
       break;
   }
   close(reader->fd);
+  return nullptr;
 }
 
 /* Parse tailed lines */

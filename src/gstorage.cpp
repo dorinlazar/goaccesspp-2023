@@ -1,37 +1,5 @@
-/**
- * gstorage.c -- common storage handling
- *    ______      ___
- *   / ____/___  /   | _____________  __________
- *  / / __/ __ \/ /| |/ ___/ ___/ _ \/ ___/ ___/
- * / /_/ / /_/ / ___ / /__/ /__/  __(__  |__  )
- * \____/\____/_/  |_\___/\___/\___/____/____/
- *
- * The MIT License (MIT)
- * Copyright (c) 2009-2022 Gerardo Orellana <hello @ goaccess.io>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 #include <stdio.h>
-#if !defined __SUNPRO_C
 #include <stdint.h>
-#endif
 #include <stdlib.h>
 #include <string.h>
 
@@ -391,16 +359,8 @@ static GParse paneling[] = {
 
 /* Initialize a new GKeyData instance */
 static void new_modulekey(GKeyData* kdata) {
-  GKeyData key = {
-      .data = NULL,
-      .data_nkey = 0,
-      .root = NULL,
-      .dhash = 0,
-      .rhash = 0,
-      .root_nkey = 0,
-      .uniq_key = NULL,
-      .uniq_nkey = 0,
-  };
+  GKeyData key;
+  ::memset(&key, 0, sizeof(key));
   *kdata = key;
 }
 
@@ -422,7 +382,7 @@ static GParse* panel_lookup(GModule module) {
  *
  * On success, the newly allocated GMetrics is returned . */
 GMetrics* new_gmetrics(void) {
-  GMetrics* metrics = xcalloc(1, sizeof(GMetrics));
+  GMetrics* metrics = cppalloc<GMetrics>();
 
   return metrics;
 }
@@ -472,7 +432,7 @@ char* get_mtr_str(GSMetric metric) {
  *
  * On success, the newly allocated pointer is returned . */
 uint32_t* i322ptr(uint32_t val) {
-  uint32_t* ptr = xmalloc(sizeof(uint32_t));
+  uint32_t* ptr = cppalloc<uint32_t>();
   *ptr = val;
 
   return ptr;
@@ -482,7 +442,7 @@ uint32_t* i322ptr(uint32_t val) {
  *
  * On success, the newly allocated pointer is returned . */
 uint64_t* uint642ptr(uint64_t val) {
-  uint64_t* ptr = xmalloc(sizeof(uint64_t));
+  uint64_t* ptr = cppalloc<uint64_t>();
   *ptr = val;
 
   return ptr;
@@ -637,7 +597,7 @@ static int insert_rkeymap(GModule module, GKeyData* kdata) {
 
 /* A wrapper function to insert a datamap uint32_t key and string value. */
 static void insert_data(GModule module, GKeyData* kdata) {
-  ht_insert_datamap(module, kdata->numdate, kdata->data_nkey, kdata->data, kdata->cdnkey);
+  ht_insert_datamap(module, kdata->numdate, kdata->data_nkey, (const char*)kdata->data, kdata->cdnkey);
 }
 
 /* A wrapper function to insert a uniqmap string key.
@@ -652,7 +612,7 @@ static int insert_uniqmap(GModule module, GKeyData* kdata, uint32_t uniq_nkey) {
 /* A wrapper function to insert a rootmap uint32_t key from the keymap
  * store mapped to its string value. */
 static void insert_rootmap(GModule module, GKeyData* kdata) {
-  ht_insert_rootmap(module, kdata->numdate, kdata->root_nkey, kdata->root, kdata->crnkey);
+  ht_insert_rootmap(module, kdata->numdate, kdata->root_nkey, (const char*)kdata->root, kdata->crnkey);
 }
 
 /* A wrapper function to insert a data uint32_t key mapped to the
@@ -740,7 +700,7 @@ static char* gen_unique_req_key(GLogItem* logitem) {
   }
 
   /* includes terminating null */
-  key = xcalloc(s1 + s2 + s3 + nul, sizeof(char));
+  key = cppalloc<char>(s1 + s2 + s3 + nul);
   /* append request */
   memcpy(key, logitem->req, s1);
 
@@ -771,7 +731,7 @@ static void append_query_string(char** req, const char* qstr) {
   if (*qstr != '?')
     qm = 1;
 
-  r = xmalloc(s1 + s2 + qm + 1);
+  r = cppalloc<char>(s1 + s2 + qm + 1);
   memcpy(r, *req, s1);
   if (qm)
     r[s1] = '?';
@@ -818,7 +778,7 @@ static void set_spec_visitor_key(char** fdate, const char* ftime) {
   dlen = strlen(*fdate);
   tlen = strlen(tkey);
 
-  key = xmalloc(dlen + tlen + 1);
+  key = cppalloc<char>(dlen + tlen + 1);
   memcpy(key, *fdate, dlen);
   memcpy(key + dlen, tkey, tlen + 1);
 
@@ -1117,7 +1077,7 @@ static int gen_tls_type_key(GKeyData* kdata, GLogItem* logitem) {
   clen = strlen(logitem->tls_cypher);
   tlen = strlen(tls);
 
-  logitem->tls_type_cypher = xmalloc(tlen + clen + 2);
+  logitem->tls_type_cypher = cppalloc<char>(tlen + clen + 2);
   memcpy(logitem->tls_type_cypher, tls, tlen);
   logitem->tls_type_cypher[tlen] = '/';
   /* includes terminating null */
@@ -1183,8 +1143,8 @@ static int extract_geolocation(GLogItem* logitem, char* continent, char* country
   if (!is_geoip_resource())
     return 1;
 
-  geoip_get_country(logitem->host, country, logitem->type_ip);
-  geoip_get_continent(logitem->host, continent, logitem->type_ip);
+  geoip_get_country(logitem->host, country, (GTypeIP)logitem->type_ip);
+  geoip_get_continent(logitem->host, continent, (GTypeIP)logitem->type_ip);
 
   return 0;
 }
@@ -1425,7 +1385,7 @@ static int clean_old_data_by_date(uint32_t numdate) {
 /* Process a log line and set the data into the corresponding data
  * structure. */
 void process_log(GLogItem* logitem) {
-  GModule module;
+  int module;
   const GParse* parse = NULL;
   size_t idx = 0;
   uint32_t numdate = logitem->numdate;
@@ -1451,9 +1411,9 @@ void process_log(GLogItem* logitem) {
 
   FOREACH_MODULE(idx, module_list) {
     module = module_list[idx];
-    if (!(parse = panel_lookup(module)))
+    if (!(parse = panel_lookup((GModule)module)))
       continue;
-    map_log(logitem, parse, module);
+    map_log(logitem, parse, (GModule)module);
   }
 
   count_bw(numdate, logitem->resp_size);
