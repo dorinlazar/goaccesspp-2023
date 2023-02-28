@@ -1,33 +1,3 @@
-/**
- * websocket.c -- An rfc6455-complaint Web Socket Server
- *    _______       _______            __        __
- *   / ____/ |     / / ___/____  _____/ /_____  / /_
- *  / / __ | | /| / /\__ \/ __ \/ ___/ //_/ _ \/ __/
- * / /_/ / | |/ |/ /___/ / /_/ / /__/ ,< /  __/ /_
- * \____/  |__/|__//____/\____/\___/_/|_|\___/\__/
- *
- * The MIT License (MIT)
- * Copyright (c) 2009-2022 Gerardo Orellana <hello @ goaccess.io>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,10 +16,6 @@
 #include <sys/ioctl.h>
 #include <time.h>
 #include <unistd.h>
-
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 #include "websocket.h"
 
@@ -94,14 +60,12 @@ static const uint8_t utf8d[] = {
 
 static struct pollfd* fdstate = NULL;
 static nfds_t nfdstate = 0;
-static WSConfig wsconfig = {0};
+static WSConfig wsconfig;
 
 static void handle_read_close(int* conn, WSClient* client, WSServer* server);
 static void handle_reads(int* conn, WSServer* server);
 static void handle_writes(int* conn, WSServer* server);
-#ifdef HAVE_LIBSSL
 static int shutdown_ssl(WSClient* client);
-#endif
 
 /* Determine if the given string is valid UTF-8.
  *
@@ -142,7 +106,7 @@ static char* sanitize_utf8(const char* str, int len) {
   uint32_t state = UTF8_VALID, prev = UTF8_VALID, cp = 0;
   int i = 0, j = 0, k = 0, l = 0;
 
-  buf = xcalloc(len + 1, sizeof(char));
+  buf = cppalloc<char>(len + 1);
   for (; i < len; prev = state, ++i) {
     switch (utf8_decode(&state, &cp, (unsigned char)str[i])) {
     case UTF8_INVAL:
@@ -200,7 +164,7 @@ static void set_pollfd(int fd, short flags) {
 
   pfd = get_pollfd(fd);
   if (pfd == NULL) {
-    struct pollfd* newstate = xrealloc(fdstate, sizeof(*pfd) * (nfdstate + 1));
+    struct pollfd* newstate = (struct pollfd*)xrealloc(fdstate, sizeof(*pfd) * (nfdstate + 1));
 
     fdstate = newstate;
     pfd = fdstate + nfdstate++;
@@ -232,21 +196,21 @@ static void unset_pollfd(int fd) {
     memmove(pfd, pfd + 1, (char*)efd - (char*)pfd);
 
   /* realloc could fail, but that's ok, we don't mind. */
-  newstate = realloc(fdstate, sizeof(*pfd) * nfdstate);
+  newstate = (struct pollfd*)realloc(fdstate, sizeof(*pfd) * nfdstate);
   if (newstate != NULL)
     fdstate = newstate;
 }
 
 /* Allocate memory for a websocket server */
 static WSServer* new_wsserver(void) {
-  WSServer* server = xcalloc(1, sizeof(WSServer));
+  WSServer* server = cppalloc<WSServer>();
 
   return server;
 }
 
 /* Allocate memory for a websocket client */
 static WSClient* new_wsclient(void) {
-  WSClient* client = xcalloc(1, sizeof(WSClient));
+  WSClient* client = cppalloc<WSClient>();
   client->status = WS_OK;
 
   return client;
@@ -254,7 +218,7 @@ static WSClient* new_wsclient(void) {
 
 /* Allocate memory for a websocket header */
 static WSHeaders* new_wsheader(void) {
-  WSHeaders* headers = xcalloc(1, sizeof(WSHeaders));
+  WSHeaders* headers = cppalloc<WSHeaders>();
   memset(headers->buf, 0, sizeof(headers->buf));
   headers->reading = 1;
 
@@ -263,7 +227,7 @@ static WSHeaders* new_wsheader(void) {
 
 /* Allocate memory for a websocket frame */
 static WSFrame* new_wsframe(void) {
-  WSFrame* frame = xcalloc(1, sizeof(WSFrame));
+  WSFrame* frame = cppalloc<WSFrame>();
   memset(frame->buf, 0, sizeof(frame->buf));
   frame->reading = 1;
 
@@ -272,14 +236,14 @@ static WSFrame* new_wsframe(void) {
 
 /* Allocate memory for a websocket message */
 static WSMessage* new_wsmessage(void) {
-  WSMessage* msg = xcalloc(1, sizeof(WSMessage));
+  WSMessage* msg = cppalloc<WSMessage>();
 
   return msg;
 }
 
 /* Allocate memory for a websocket pipeout */
 static WSPipeOut* new_wspipeout(void) {
-  WSPipeOut* pipeout = xcalloc(1, sizeof(WSPipeOut));
+  WSPipeOut* pipeout = cppalloc<WSPipeOut>();
   pipeout->fd = -1;
 
   return pipeout;
@@ -287,7 +251,7 @@ static WSPipeOut* new_wspipeout(void) {
 
 /* Allocate memory for a websocket pipein */
 static WSPipeIn* new_wspipein(void) {
-  WSPipeIn* pipein = xcalloc(1, sizeof(WSPipeIn));
+  WSPipeIn* pipein = cppalloc<WSPipeIn>();
   pipein->fd = -1;
 
   return pipein;
@@ -306,7 +270,7 @@ static char* escape_http_request(const char* src) {
     return NULL;
 
   p = (const unsigned char*)src;
-  q = dest = xmalloc(strlen(src) * 4 + 1);
+  q = dest = cppalloc<char>(strlen(src) * 4 + 1);
 
   while (*p) {
     switch (*p) {
@@ -379,7 +343,7 @@ static size_t chop_nchars(char* str, size_t n, size_t len) {
  *
  * On match, 1 is returned, else 0. */
 static int ws_find_client_sock_in_list(void* data, void* needle) {
-  WSClient* client = data;
+  WSClient* client = (WSClient*)data;
 
   return client->listener == (*(int*)needle);
 }
@@ -477,7 +441,7 @@ static void ws_clear_queue(WSClient* client) {
   (*queue) = NULL;
 
   /* done sending the whole queue, stop throttling */
-  client->status &= ~WS_THROTTLING;
+  client->status = (WSStatus)(((int)client->status) & (~(int)WS_THROTTLING));
   /* done sending, close connection if set to close */
   if ((client->status & WS_CLOSE) && (client->status & WS_SENDING))
     client->status = WS_CLOSE;
@@ -501,7 +465,6 @@ static void ws_remove_client_from_list(WSClient* client, WSServer* server) {
   list_remove_node(&server->colist, node);
 }
 
-#if HAVE_LIBSSL
 /* Attempt to send the TLS/SSL "close notify" shutdown and and removes
  * the SSL structure pointed to by ssl and frees up the allocated
  * memory. */
@@ -530,11 +493,10 @@ static void ws_ssl_cleanup(WSServer* server) {
 #endif
   EVP_cleanup();
 }
-#endif
 
 /* Remove all clients that are still hanging out. */
 static int ws_remove_dangling_clients(void* value, void* user_data) {
-  WSClient* client = value;
+  WSClient* client = (WSClient*)value;
   (void)(user_data);
 
   if (client == NULL)
@@ -544,10 +506,8 @@ static int ws_remove_dangling_clients(void* value, void* user_data) {
     ws_clear_handshake_headers(client->headers);
   if (client->sockqueue)
     ws_clear_queue(client);
-#ifdef HAVE_LIBSSL
   if (client->ssl)
     ws_shutdown_dangling_clients(client);
-#endif
 
   return 0;
 }
@@ -611,9 +571,7 @@ void ws_stop(WSServer* server) {
   if (server->colist)
     list_remove_nodes(server->colist);
 
-#ifdef HAVE_LIBSSL
   ws_ssl_cleanup(server);
-#endif
 
   free(server);
   free(fdstate);
@@ -636,12 +594,11 @@ static void ws_append_str(char** dest, const char* src) {
   size_t srclen = strlen(src);
   size_t newlen = curlen + srclen;
 
-  char* str = xrealloc(*dest, newlen + 1);
+  char* str = (char*)xrealloc(*dest, newlen + 1);
   memcpy(str + curlen, src, srclen + 1);
   *dest = str;
 }
 
-#if HAVE_LIBSSL
 /* Create a new SSL_CTX object as framework to establish TLS/SSL
  * enabled connections.
  *
@@ -935,7 +892,6 @@ static int read_ssl_socket(WSClient* client, char* buffer, int size) {
 
   return bytes;
 }
-#endif
 
 /* Get sockaddr, either IPv4 or IPv6 */
 static void* ws_get_raddr(struct sockaddr* sa) {
@@ -1025,7 +981,7 @@ static char* ws_parse_request(char* line, char** method, char** protocol) {
     if ((rlen = proto - req) <= 0)
       return NULL;
 
-    request = xmalloc(rlen + 1);
+    request = cppalloc<char>(rlen + 1);
     strncpy(request, req, rlen);
     request[rlen] = 0;
 
@@ -1149,7 +1105,7 @@ static int parse_headers(WSHeaders* headers) {
     if (len <= 0)
       return 1;
 
-    tmp = xmalloc(len + 1);
+    tmp = cppalloc<char>(len + 1);
     memcpy(tmp, line, len);
     tmp[len] = '\0';
 
@@ -1170,17 +1126,17 @@ static int parse_headers(WSHeaders* headers) {
 
 /* Set into a queue the data that couldn't be sent. */
 static void ws_queue_sockbuf(WSClient* client, const char* buffer, int len, int bytes) {
-  WSQueue* queue = xcalloc(1, sizeof(WSQueue));
+  WSQueue* queue = cppalloc<WSQueue>();
 
   if (bytes < 1)
     bytes = 0;
 
-  queue->queued = xcalloc(len - bytes, sizeof(char));
+  queue->queued = cppalloc<char>(len - bytes);
   memcpy(queue->queued, buffer + bytes, len - bytes);
   queue->qlen = len - bytes;
   client->sockqueue = queue;
 
-  client->status |= WS_SENDING;
+  client->status = (WSStatus)(((int)client->status) | ((int)WS_SENDING));
   set_pollfd(client->listener, POLLIN | POLLOUT);
 }
 
@@ -1197,7 +1153,7 @@ static int read_plain_socket(WSClient* client, char* buffer, int size) {
   if (bytes == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
     return ws_set_status(client, WS_READING, bytes);
   else if (bytes == -1 || bytes == 0)
-    return ws_set_status(client, WS_ERR | WS_CLOSE, bytes);
+    return ws_set_status(client, (WSStatus)(WS_ERR | WS_CLOSE), bytes);
 
   return bytes;
 }
@@ -1208,14 +1164,10 @@ static int read_plain_socket(WSClient* client, char* buffer, int size) {
  * On error, -1 is returned and the connection status is set.
  * On success, the number of bytes read is returned. */
 static int read_socket(WSClient* client, char* buffer, int size) {
-#ifdef HAVE_LIBSSL
   if (wsconfig.use_ssl)
     return read_ssl_socket(client, buffer, size);
   else
     return read_plain_socket(client, buffer, size);
-#else
-  return read_plain_socket(client, buffer, size);
-#endif
 }
 
 static int send_plain_buffer(WSClient* client, const char* buffer, int len) {
@@ -1223,14 +1175,10 @@ static int send_plain_buffer(WSClient* client, const char* buffer, int len) {
 }
 
 static int send_buffer(WSClient* client, const char* buffer, int len) {
-#ifdef HAVE_LIBSSL
   if (wsconfig.use_ssl)
     return send_ssl_buffer(client, buffer, len);
   else
     return send_plain_buffer(client, buffer, len);
-#else
-  return send_plain_buffer(client, buffer, len);
-#endif
 }
 
 /* Attempt to send the given buffer to the given socket.
@@ -1242,7 +1190,7 @@ static int ws_respond_data(WSClient* client, const char* buffer, int len) {
 
   bytes = send_buffer(client, buffer, len);
   if (bytes == -1 && errno == EPIPE)
-    return ws_set_status(client, WS_ERR | WS_CLOSE, bytes);
+    return ws_set_status(client, (WSStatus)(WS_ERR | WS_CLOSE), bytes);
 
   /* did not send all of it... buffer it for a later attempt */
   if (bytes < len || (bytes == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)))
@@ -1261,7 +1209,7 @@ static int ws_respond_cache(WSClient* client) {
 
   bytes = send_buffer(client, queue->queued, queue->qlen);
   if (bytes == -1 && errno == EPIPE)
-    return ws_set_status(client, WS_ERR | WS_CLOSE, bytes);
+    return ws_set_status(client, (WSStatus)(WS_ERR | WS_CLOSE), bytes);
 
   if (bytes == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
     return bytes;
@@ -1284,10 +1232,10 @@ static int ws_realloc_send_buf(WSClient* client, const char* buf, int len) {
   int newlen = 0;
 
   newlen = queue->qlen + len;
-  tmp = realloc(queue->queued, newlen);
+  tmp = (char*)realloc(queue->queued, newlen);
   if (tmp == NULL && newlen > 0) {
     ws_clear_queue(client);
-    return ws_set_status(client, WS_ERR | WS_CLOSE, 1);
+    return ws_set_status(client, (WSStatus)(WS_ERR | WS_CLOSE), 1);
   }
   queue->queued = tmp;
   memcpy(queue->queued + queue->qlen, buf, len);
@@ -1296,7 +1244,7 @@ static int ws_realloc_send_buf(WSClient* client, const char* buf, int len) {
   /* client probably  too slow, so stop queueing until everything is
    * sent */
   if (queue->qlen >= WS_THROTTLE_THLD)
-    client->status |= WS_THROTTLING;
+    client->status = (WSStatus)((int)client->status | WS_THROTTLING);
 
   return 0;
 }
@@ -1359,7 +1307,7 @@ static int ws_send_frame(WSClient* client, WSOpcode opcode, const char* p, int s
     break;
   default: buf[1] = (sz & 0xff);
   }
-  frm = xcalloc(hsize + sz, sizeof(unsigned char));
+  frm = cppalloc<char>(hsize + sz);
   memcpy(frm, buf, hsize);
   if (p != NULL && sz > 0)
     memcpy(frm + hsize, p, sz);
@@ -1454,7 +1402,7 @@ static void ws_set_handshake_headers(WSHeaders* headers) {
   size_t klen = strlen(headers->ws_key);
   size_t mlen = strlen(WS_MAGIC_STR);
   size_t len = klen + mlen;
-  char* s = xmalloc(klen + mlen + 1);
+  char* s = cppalloc<char>(klen + mlen + 1);
   uint8_t digest[SHA_DIGEST_LENGTH];
 
   memset(digest, 0, sizeof *digest);
@@ -1635,12 +1583,12 @@ static int ws_set_front_header_fields(WSClient* client) {
 
   (*frm)->fin = WS_FRM_FIN(*(buf));
   (*frm)->masking = WS_FRM_MASK(*(buf + 1));
-  (*frm)->opcode = WS_FRM_OPCODE(*(buf));
+  (*frm)->opcode = (WSOpcode)WS_FRM_OPCODE(*(buf));
   (*frm)->res = WS_FRM_R1(*(buf)) || WS_FRM_R2(*(buf)) || WS_FRM_R3(*(buf));
 
   /* should be masked and can't be using RESVd  bits */
   if (!(*frm)->masking || (*frm)->res)
-    return ws_set_status(client, WS_ERR | WS_CLOSE, 1);
+    return ws_set_status(client, (WSStatus)(WS_ERR | WS_CLOSE), 1);
 
   return 0;
 }
@@ -1657,7 +1605,7 @@ static void ws_unmask_payload(char* buf, int len, int offset, unsigned char mask
 
 /* Close a websocket connection. */
 static int ws_handle_close(WSClient* client) {
-  client->status = WS_ERR | WS_CLOSE;
+  client->status = (WSStatus)(WS_ERR | WS_CLOSE);
   return ws_send_frame(client, WS_OPCODE_CLOSE, NULL, 0);
 }
 
@@ -1674,7 +1622,7 @@ static void ws_handle_pong(WSClient* client) {
   WSFrame** frm = &client->frame;
 
   if (!(*frm)->fin) {
-    ws_handle_err(client, WS_CLOSE_PROTO_ERR, WS_ERR | WS_CLOSE, NULL);
+    ws_handle_err(client, WS_CLOSE_PROTO_ERR, (WSStatus)(WS_ERR | WS_CLOSE), NULL);
     return;
   }
   ws_free_message(client);
@@ -1691,14 +1639,14 @@ static void ws_handle_ping(WSClient* client) {
   /* RFC states that Control frames themselves MUST NOT be
    * fragmented. */
   if (!(*frm)->fin) {
-    ws_handle_err(client, WS_CLOSE_PROTO_ERR, WS_ERR | WS_CLOSE, NULL);
+    ws_handle_err(client, WS_CLOSE_PROTO_ERR, (WSStatus)(WS_ERR | WS_CLOSE), NULL);
     return;
   }
 
   /* Control frames are only allowed to have payload up to and
    * including 125 octets */
   if ((*frm)->payloadlen > 125) {
-    ws_handle_err(client, WS_CLOSE_PROTO_ERR, WS_ERR | WS_CLOSE, NULL);
+    ws_handle_err(client, WS_CLOSE_PROTO_ERR, (WSStatus)(WS_ERR | WS_CLOSE), NULL);
     return;
   }
 
@@ -1710,7 +1658,7 @@ static void ws_handle_ping(WSClient* client) {
 
   /* Copy the ping payload */
   pos = (*msg)->payloadsz - len;
-  buf = xcalloc(len, sizeof(char));
+  buf = cppalloc<char>(len);
   memcpy(buf, (*msg)->payload + pos, len);
 
   /* Unmask it */
@@ -1718,13 +1666,13 @@ static void ws_handle_ping(WSClient* client) {
 
   /* Resize the current payload (keep an eye on this realloc) */
   newlen = (*msg)->payloadsz - len;
-  tmp = realloc((*msg)->payload, newlen);
+  tmp = (char*)realloc((*msg)->payload, newlen);
   if (tmp == NULL && newlen > 0) {
     free((*msg)->payload);
     free(buf);
 
     (*msg)->payload = NULL;
-    client->status = WS_ERR | WS_CLOSE;
+    client->status = (WSStatus)(WS_ERR | WS_CLOSE);
     return;
   }
 
@@ -1768,7 +1716,7 @@ static void ws_handle_text_bin(WSClient* client, WSServer* server) {
 
   /* All data frames after the initial data frame must have opcode 0 */
   if ((*msg)->fragmented && (*frm)->opcode != WS_OPCODE_CONTINUATION) {
-    client->status = WS_ERR | WS_CLOSE;
+    client->status = (WSStatus)(WS_ERR | WS_CLOSE);
     return;
   }
 
@@ -1786,7 +1734,7 @@ static void ws_handle_text_bin(WSClient* client, WSServer* server) {
   /* validate text data encoded as UTF-8 */
   if ((*msg)->opcode == WS_OPCODE_TEXT) {
     if (ws_validate_string((*msg)->payload, (*msg)->payloadsz) != 0) {
-      ws_handle_err(client, WS_CLOSE_INVALID_UTF8, WS_ERR | WS_CLOSE, NULL);
+      ws_handle_err(client, WS_CLOSE_INVALID_UTF8, (WSStatus)(WS_ERR | WS_CLOSE), NULL);
       return;
     }
   }
@@ -1814,7 +1762,7 @@ static void ws_manage_payload_opcode(WSClient* client, WSServer* server) {
     LOG(("CONTINUATION\n"));
     /* first frame can't be a continuation frame */
     if (!(*msg)->fragmented) {
-      client->status = WS_ERR | WS_CLOSE;
+      client->status = (WSStatus)(WS_ERR | WS_CLOSE);
       break;
     }
     ws_handle_text_bin(client, server);
@@ -1938,7 +1886,7 @@ static int ws_get_frm_header(WSClient* client) {
 
   if ((*frm)->payloadlen > wsconfig.max_frm_size) {
     ws_error(client, WS_CLOSE_TOO_LARGE, "Frame is too big");
-    return ws_set_status(client, WS_ERR | WS_CLOSE, bytes);
+    return ws_set_status(client, (WSStatus)(WS_ERR | WS_CLOSE), bytes);
   }
 
   (*frm)->buflen = 0;
@@ -1957,7 +1905,7 @@ static int ws_realloc_frm_payload(WSFrame* frm, WSMessage* msg) {
   uint64_t newlen = 0;
 
   newlen = msg->payloadsz + frm->payloadlen;
-  tmp = realloc(msg->payload, newlen);
+  tmp = (char*)realloc(msg->payload, newlen);
   if (tmp == NULL && newlen > 0) {
     free(msg->payload);
     msg->payload = NULL;
@@ -1987,11 +1935,11 @@ static int ws_get_frm_payload(WSClient* client, WSServer* server) {
 
   /* message within the same frame */
   if ((*msg)->payload == NULL && (*frm)->payloadlen)
-    (*msg)->payload = xcalloc((*frm)->payloadlen, sizeof(char));
+    (*msg)->payload = cppalloc<char>((*frm)->payloadlen);
   /* handle a new frame */
   else if ((*msg)->buflen == 0 && (*frm)->payloadlen) {
     if (ws_realloc_frm_payload((*frm), (*msg)) == 1)
-      return ws_set_status(client, WS_ERR | WS_CLOSE, 0);
+      return ws_set_status(client, (WSStatus)(WS_ERR | WS_CLOSE), 0);
   }
 
   readh = (*msg)->buflen;            /* read from so far */
@@ -2042,10 +1990,8 @@ static int read_client_data(WSClient* client, WSServer* server) {
 static void handle_tcp_close(int conn, WSClient* client, WSServer* server) {
   LOG(("Closing TCP %d [%s]\n", client->listener, client->remote_ip));
 
-#ifdef HAVE_LIBSSL
   if (client->ssl)
     shutdown_ssl(client);
-#endif
 
   shutdown(conn, SHUT_RDWR);
   /* upon close, call onclose() callback */
@@ -2067,11 +2013,9 @@ static void handle_tcp_close(int conn, WSClient* client, WSServer* server) {
   server->closing = 0;
   ws_close(conn);
 
-#ifdef HAVE_LIBSSL
   if (client->ssl)
     SSL_free(client->ssl);
   client->ssl = NULL;
-#endif
 
   /* remove client from our list */
   ws_remove_client_from_list(client, server);
@@ -2102,11 +2046,9 @@ static void handle_accept(int listener, WSServer* server) {
   if (!(client = ws_get_client_from_list(newfd, &server->colist)))
     return;
 
-#ifdef HAVE_LIBSSL
   /* set flag to do TLS handshake */
   if (wsconfig.use_ssl)
     client->sslstatus |= WS_TLS_ACCEPTING;
-#endif
 
   LOG(("Accepted: %d [%s]\n", newfd, client->remote_ip));
 }
@@ -2120,10 +2062,8 @@ static void handle_reads(int* conn, WSServer* server) {
 
   LOG(("Handling read %d [%s]...\n", client->listener, client->remote_ip));
 
-#ifdef HAVE_LIBSSL
   if (handle_ssl_pending_rw(conn, server, client) == 0)
     return;
-#endif
 
   client->start_proc = client->end_proc = (struct timeval){0};
   gettimeofday(&client->start_proc, NULL);
@@ -2145,15 +2085,13 @@ static void handle_writes(int* conn, WSServer* server) {
   if (!(client = ws_get_client_from_list(*conn, &server->colist)))
     return;
 
-#ifdef HAVE_LIBSSL
   if (handle_ssl_pending_rw(conn, server, client) == 0)
     return;
-#endif
 
   ws_respond(client, NULL, 0); /* buffered data */
   /* done sending data */
   if (client->sockqueue == NULL) {
-    client->status &= ~WS_SENDING;
+    client->status = (WSStatus)((int)client->status & ~WS_SENDING);
     set_pollfd(client->listener, server->closing ? 0 : POLLIN);
   }
 
@@ -2245,7 +2183,7 @@ static int ws_realloc_fifobuf(WSPipeOut* pipeout, const char* buf, int len) {
   int newlen = 0;
 
   newlen = queue->qlen + len;
-  tmp = realloc(queue->queued, newlen);
+  tmp = (char*)realloc(queue->queued, newlen);
   if (tmp == NULL && newlen > 0) {
     ws_close(pipeout->fd);
     clear_fifo_queue(pipeout);
@@ -2268,12 +2206,12 @@ static void ws_queue_fifobuf(WSPipeOut* pipeout, const char* buffer, int len, in
   if (bytes < 1)
     bytes = 0;
 
-  (*queue) = xcalloc(1, sizeof(WSQueue));
-  (*queue)->queued = xcalloc(len - bytes, sizeof(char));
+  (*queue) = cppalloc<WSQueue>();
+  (*queue)->queued = cppalloc<char>(len - bytes);
   memcpy((*queue)->queued, buffer + bytes, len - bytes);
   (*queue)->qlen = len - bytes;
 
-  pipeout->status |= WS_SENDING;
+  pipeout->status = (WSStatus)((int)pipeout->status | WS_SENDING);
   set_pollfd(pipeout->fd, POLLOUT);
 }
 
@@ -2352,7 +2290,7 @@ int ws_write_fifo(WSPipeOut* pipeout, char* buffer, int len) {
   }
 
   if (pipeout->fifoqueue == NULL) {
-    pipeout->status &= ~WS_SENDING;
+    pipeout->status = (WSStatus)((int)pipeout->status & ~WS_SENDING);
     set_pollfd(pipeout->fd, 0);
   }
 
@@ -2388,7 +2326,7 @@ static int ws_broadcast_fifo(WSClient* client, WSServer* server) {
   }
 
   LOG((" - Sending...\n"));
-  ws_send_data(client, packet->type, packet->data, packet->size);
+  ws_send_data(client, (WSOpcode)packet->type, packet->data, packet->size);
 
   return 0;
 }
@@ -2402,9 +2340,9 @@ static void ws_broadcast_fifo_to_clients(WSServer* server) {
   if ((n = list_count(server->colist)) == 0)
     return;
 
-  close_list = xcalloc(n, sizeof(uint32_t));
+  close_list = cppalloc<uint32_t>(n);
   GSLIST_FOREACH(server->colist, data, {
-    client = data;
+    client = (WSClient*)data;
     if (ws_broadcast_fifo(client, server) == -1)
       close_list[idx++] = client->listener;
   });
@@ -2433,7 +2371,7 @@ static void ws_send_strict_fifo_to_client(WSServer* server, int listener, WSPack
     handle_tcp_close(client->listener, client, server);
     return;
   }
-  ws_send_data(client, pa->type, pa->data, pa->len);
+  ws_send_data(client, (WSOpcode)pa->type, pa->data, pa->len);
 }
 
 /* Attempt to read message from a named pipe (FIFO).
@@ -2525,10 +2463,10 @@ static void handle_strict_fifo(WSServer* server) {
   }
 
   if ((*pa) == NULL) {
-    (*pa) = xcalloc(1, sizeof(WSPacket));
+    (*pa) = cppalloc<WSPacket>();
     (*pa)->type = type;
     (*pa)->size = size;
-    (*pa)->data = xcalloc(size, sizeof(char));
+    (*pa)->data = cppalloc<char>(size);
   }
 
   readh = (*pa)->len;         /* read from payload so far */
@@ -2571,7 +2509,7 @@ static void handle_fixed_fifo(WSServer* server) {
   if (ws_validate_string(buf, bytes) != 0)
     return;
 
-  (*pa) = xcalloc(1, sizeof(WSPacket));
+  (*pa) = cppalloc<WSPacket>();
   (*pa)->type = WS_OPCODE_TEXT;
   (*pa)->size = bytes;
   (*pa)->data = xstrdup(buf);
@@ -2654,7 +2592,6 @@ void ws_start(WSServer* server) {
   if (server->self_pipe[0] != -1)
     set_pollfd(server->self_pipe[0], POLLIN);
 
-#ifdef HAVE_LIBSSL
   if (wsconfig.sslcert && wsconfig.sslkey) {
     LOG(("==Using TLS/SSL==\n"));
     wsconfig.use_ssl = 1;
@@ -2663,7 +2600,6 @@ void ws_start(WSServer* server) {
       return;
     }
   }
-#endif
 
   ws_socket(&listener);
   set_pollfd(listener, POLLIN);
@@ -2673,7 +2609,7 @@ void ws_start(WSServer* server) {
      * any dispatch to modify the real fdstate for the next pass */
     if (ncfdstate != nfdstate) {
       free(cfdstate);
-      cfdstate = xmalloc(nfdstate * sizeof(*cfdstate));
+      cfdstate = cppalloc<struct pollfd>(nfdstate);
       memset(cfdstate, 0, sizeof(*cfdstate) * nfdstate);
       ncfdstate = nfdstate;
     }
