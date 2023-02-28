@@ -1,33 +1,3 @@
-/**
- * output.c -- output json to the standard output stream
- *    ______      ___
- *   / ____/___  /   | _____________  __________
- *  / / __/ __ \/ /| |/ ___/ ___/ _ \/ ___/ ___/
- * / /_/ / /_/ / ___ / /__/ /__/  __(__  |__  )
- * \____/\____/_/  |_\___/\___/\___/____/____/
- *
- * The MIT License (MIT)
- * Copyright (c) 2009-2022 Gerardo Orellana <hello @ goaccess.io>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 #define _FILE_OFFSET_BITS 64
@@ -68,7 +38,6 @@ static void print_json_data(GJSON* json, GHolder* h, GPercTotals totals, const s
 static void print_json_host_items(GJSON* json, GHolderItem* item, GPercTotals totals, int size, int iisp);
 static void print_json_sub_items(GJSON* json, GHolderItem* item, GPercTotals totals, int size, int iisp);
 
-/* *INDENT-OFF* */
 static GPanel paneling[] = {
     {VISITORS, print_json_data, NULL},
     {REQUESTS, print_json_data, NULL},
@@ -89,9 +58,7 @@ static GPanel paneling[] = {
     {ASN, print_json_data, NULL},
     {MIME_TYPE, print_json_data, print_json_sub_items},
     {TLS_TYPE, print_json_data, print_json_sub_items},
-
 };
-/* *INDENT-ON* */
 
 /* Get panel output data for the given module.
  *
@@ -111,7 +78,7 @@ static GPanel* panel_lookup(GModule module) {
  *
  * On success, the newly allocated GJSON is returned . */
 static GJSON* new_gjson(void) {
-  GJSON* json = xcalloc(1, sizeof(GJSON));
+  GJSON* json = cppalloc<GJSON>();
 
   return json;
 }
@@ -148,7 +115,7 @@ static void set_json_buffer(GJSON* json, int len) {
   if (newlen < need)
     newlen = need;
 
-  tmp = realloc(json->buf, newlen);
+  tmp = (char*)realloc(json->buf, newlen);
   if (tmp == NULL) {
     free_json(json);
     FATAL(("Unable to realloc JSON buffer.\n"));
@@ -1002,7 +969,7 @@ static void print_json_summary(GJSON* json, GHolder* holder) {
 /* Iterate over all panels and generate json output. */
 static GJSON* init_json_output(GHolder* holder) {
   GJSON* json = NULL;
-  GModule module;
+  int module;
   GPercTotals totals;
   const GPanel* panel = NULL;
   size_t idx = 0, npanels = num_panels(), cnt = 0;
@@ -1017,7 +984,7 @@ static GJSON* init_json_output(GHolder* holder) {
   FOREACH_MODULE(idx, module_list) {
     module = module_list[idx];
 
-    if (!(panel = panel_lookup(module)))
+    if (!(panel = panel_lookup((GModule)module)))
       continue;
 
     panel->render(json, holder + module, totals, panel);

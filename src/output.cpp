@@ -1,37 +1,3 @@
-/**
- * output.c -- output to the standard output stream
- *    ______      ___
- *   / ____/___  /   | _____________  __________
- *  / / __/ __ \/ /| |/ ___/ ___/ _ \/ ___/ ___/
- * / /_/ / /_/ / ___ / /__/ /__/  __(__  |__  )
- * \____/\____/_/  |_\___/\___/\___/____/____/
- *
- * The MIT License (MIT)
- * Copyright (c) 2009-2022 Gerardo Orellana <hello @ goaccess.io>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-#define _LARGEFILE_SOURCE
-#define _LARGEFILE64_SOURCE
-#define _FILE_OFFSET_BITS 64
-
 #include <errno.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -66,7 +32,6 @@ static void hits_visitors_req_plot(FILE* fp, GHTMLPlot plot, int sp);
 static void print_metrics(FILE* fp, const GHTML* def, int sp);
 static void print_host_metrics(FILE* fp, const GHTML* def, int sp);
 
-/* *INDENT-OFF* */
 static GHTML htmldef[] = {
     {VISITORS,
      1,
@@ -203,7 +168,6 @@ static GHTML htmldef[] = {
      }},
 
 };
-/* *INDENT-ON* */
 
 /* number of new lines (applicable fields) */
 static int nlines = 0;
@@ -346,10 +310,10 @@ static void print_html_body(FILE* fp, const char* now) {
 /* Output all the document footer elements such as script and closing
  * tags. */
 static void print_html_footer(FILE* fp) {
-  fprintf(fp, "<script>%.*s</script>", d3_js_length, d3_js);
-  fprintf(fp, "<script>%.*s</script>", hogan_js_length, hogan_js);
-  fprintf(fp, "<script>%.*s</script>", app_js_length, app_js);
-  fprintf(fp, "<script>%.*s</script>", charts_js_length, charts_js);
+  fprintf(fp, "<script>%.*s</script>", d3_js_length, (const char*)d3_js);
+  fprintf(fp, "<script>%.*s</script>", hogan_js_length, (const char*)hogan_js);
+  fprintf(fp, "<script>%.*s</script>", app_js_length, (const char*)app_js);
+  fprintf(fp, "<script>%.*s</script>", charts_js_length, (const char*)charts_js);
 
   /* load custom JS file, if any */
   if (conf.html_custom_js)
@@ -428,38 +392,39 @@ static void print_plot_def(FILE* fp, const GHTMLPlot plot, GChart* chart, int n,
 
 /* Output D3.js hits/visitors plot definitions. */
 static void hits_visitors_plot(FILE* fp, GHTMLPlot plot, int sp) {
-  /* *INDENT-OFF* */
+  GChartDef y0[]{{"key", "hits"}, {"label", MTRC_HITS_LBL}, ChartDefStopper};
+  GChartDef y1[]{{"key", "visitors"}, {"label", MTRC_VISITORS_LBL}, ChartDefStopper};
   GChart def[] = {
-      {"y0", (GChartDef[]){{"key", "hits"}, {"label", MTRC_HITS_LBL}, ChartDefStopper}},
-      {"y1", (GChartDef[]){{"key", "visitors"}, {"label", MTRC_VISITORS_LBL}, ChartDefStopper}},
+      {"y0", y0},
+      {"y1", y1},
   };
 
   plot.chart_key = (char[]){"hits-visitors"};
   plot.chart_lbl = (char*){HTML_PLOT_HITS_VIS};
-  /* *INDENT-ON* */
   print_plot_def(fp, plot, def, ARRAY_SIZE(def), sp);
 }
 
 /* Output D3.js hits/visitors plot definitions. */
 static void hits_visitors_req_plot(FILE* fp, GHTMLPlot plot, int sp) {
-  /* *INDENT-OFF* */
+  GChartDef x[]{{"key", "[\"method\", \"data\", \"protocol\"]"}, ChartDefStopper};
+  GChartDef y0[]{{"key", "hits"}, {"label", MTRC_HITS_LBL}, ChartDefStopper};
+  GChartDef y1[]{{"key", "visitors"}, {"label", MTRC_VISITORS_LBL}, ChartDefStopper};
   GChart def[] = {
-      {"x", (GChartDef[]){{"key", "[\"method\", \"data\", \"protocol\"]"}, ChartDefStopper}},
-      {"y0", (GChartDef[]){{"key", "hits"}, {"label", MTRC_HITS_LBL}, ChartDefStopper}},
-      {"y1", (GChartDef[]){{"key", "visitors"}, {"label", MTRC_VISITORS_LBL}, ChartDefStopper}},
+      {"x", x},
+      {"y0", y0},
+      {"y1", y1},
   };
 
   plot.chart_key = (char[]){"hits-visitors"};
   plot.chart_lbl = (char*){HTML_PLOT_HITS_VIS};
-  /* *INDENT-ON* */
   print_plot_def(fp, plot, def, ARRAY_SIZE(def), sp);
 }
 
 /* Output C3.js bandwidth plot definitions. */
 static void hits_bw_plot(FILE* fp, GHTMLPlot plot, int sp) {
-  /* *INDENT-OFF* */
+  GChartDef y0[]{{"key", "bytes"}, {"label", MTRC_BW_LBL}, {"format", "bytes"}, ChartDefStopper};
   GChart def[] = {
-      {"y0", (GChartDef[]){{"key", "bytes"}, {"label", MTRC_BW_LBL}, {"format", "bytes"}, ChartDefStopper}},
+      {"y0", y0},
   };
 
   if (!conf.bandwidth)
@@ -467,16 +432,17 @@ static void hits_bw_plot(FILE* fp, GHTMLPlot plot, int sp) {
 
   plot.chart_key = (char[]){"bandwidth"};
   plot.chart_lbl = (char*){MTRC_BW_LBL};
-  /* *INDENT-ON* */
+
   print_plot_def(fp, plot, def, ARRAY_SIZE(def), sp);
 }
 
 /* Output C3.js bandwidth plot definitions. */
 static void hits_bw_req_plot(FILE* fp, GHTMLPlot plot, int sp) {
-  /* *INDENT-OFF* */
+  GChartDef x[]{{"key", "[\"method\", \"protocol\", \"data\"]"}, ChartDefStopper};
+  GChartDef y0[]{{"key", "bytes"}, {"label", MTRC_BW_LBL}, {"format", "bytes"}, ChartDefStopper};
   GChart def[] = {
-      {"x", (GChartDef[]){{"key", "[\"method\", \"protocol\", \"data\"]"}, ChartDefStopper}},
-      {"y0", (GChartDef[]){{"key", "bytes"}, {"label", MTRC_BW_LBL}, {"format", "bytes"}, ChartDefStopper}},
+      {"x", x},
+      {"y0", y0},
   };
 
   if (!conf.bandwidth)
@@ -484,7 +450,6 @@ static void hits_bw_req_plot(FILE* fp, GHTMLPlot plot, int sp) {
 
   plot.chart_key = (char[]){"bandwidth"};
   plot.chart_lbl = (char*){MTRC_BW_LBL};
-  /* *INDENT-ON* */
   print_plot_def(fp, plot, def, ARRAY_SIZE(def), sp);
 }
 
@@ -561,7 +526,12 @@ static void print_def_block(FILE* fp, const GDefMetric def, int sp, int last) {
 
 /* Output JSON overall requests definition block. */
 static void print_def_overall_requests(FILE* fp, int sp) {
-  GDefMetric def = {.lbl = T_REQUESTS, .datatype = "numeric", .cname = "black"};
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+  def.lbl = T_REQUESTS;
+  def.datatype = "numeric";
+  def.cname = "black";
+
   fpopen_obj_attr(fp, OVERALL_REQ, sp);
   print_def_metric(fp, def, sp);
   fpclose_obj(fp, sp, 0);
@@ -569,7 +539,12 @@ static void print_def_overall_requests(FILE* fp, int sp) {
 
 /* Output JSON overall valid requests definition block. */
 static void print_def_overall_valid_reqs(FILE* fp, int sp) {
-  GDefMetric def = {.lbl = T_VALID, .datatype = "numeric", .cname = "green"};
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+  def.lbl = T_VALID;
+  def.datatype = "numeric";
+  def.cname = "green";
+
   fpopen_obj_attr(fp, OVERALL_VALID, sp);
   print_def_metric(fp, def, sp);
   fpclose_obj(fp, sp, 0);
@@ -577,7 +552,12 @@ static void print_def_overall_valid_reqs(FILE* fp, int sp) {
 
 /* Output JSON overall invalid requests definition block. */
 static void print_def_overall_invalid_reqs(FILE* fp, int sp) {
-  GDefMetric def = {.lbl = T_FAILED, .datatype = "numeric", .cname = "red"};
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+  def.lbl = T_FAILED;
+  def.datatype = "numeric";
+  def.cname = "red";
+
   fpopen_obj_attr(fp, OVERALL_FAILED, sp);
   print_def_metric(fp, def, sp);
   fpclose_obj(fp, sp, 0);
@@ -585,7 +565,11 @@ static void print_def_overall_invalid_reqs(FILE* fp, int sp) {
 
 /* Output JSON process time definition block. */
 static void print_def_overall_processed_time(FILE* fp, int sp) {
-  GDefMetric def = {.lbl = T_GEN_TIME, .datatype = "secs", .cname = "gray"};
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+  def.lbl = T_GEN_TIME;
+  def.datatype = "secs";
+  def.cname = "gray";
   fpopen_obj_attr(fp, OVERALL_GENTIME, sp);
   print_def_metric(fp, def, sp);
   fpclose_obj(fp, sp, 0);
@@ -593,7 +577,11 @@ static void print_def_overall_processed_time(FILE* fp, int sp) {
 
 /* Output JSON overall visitors definition block. */
 static void print_def_overall_visitors(FILE* fp, int sp) {
-  GDefMetric def = {.lbl = T_UNIQUE_VISITORS, .datatype = "numeric", .cname = "blue"};
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+  def.lbl = T_UNIQUE_VISITORS;
+  def.datatype = "numeric";
+  def.cname = "blue";
   fpopen_obj_attr(fp, OVERALL_VISITORS, sp);
   print_def_metric(fp, def, sp);
   fpclose_obj(fp, sp, 0);
@@ -601,10 +589,11 @@ static void print_def_overall_visitors(FILE* fp, int sp) {
 
 /* Output JSON overall files definition block. */
 static void print_def_overall_files(FILE* fp, int sp) {
-  GDefMetric def = {
-      .lbl = T_UNIQUE_FILES,
-      .datatype = "numeric",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+
+  def.lbl = T_UNIQUE_FILES;
+  def.datatype = "numeric";
   fpopen_obj_attr(fp, OVERALL_FILES, sp);
   print_def_metric(fp, def, sp);
   fpclose_obj(fp, sp, 0);
@@ -612,10 +601,11 @@ static void print_def_overall_files(FILE* fp, int sp) {
 
 /* Output JSON overall excluded requests definition block. */
 static void print_def_overall_excluded(FILE* fp, int sp) {
-  GDefMetric def = {
-      .lbl = T_EXCLUDE_IP,
-      .datatype = "numeric",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+  def.lbl = T_EXCLUDE_IP;
+  def.datatype = "numeric";
+
   fpopen_obj_attr(fp, OVERALL_EXCL_HITS, sp);
   print_def_metric(fp, def, sp);
   fpclose_obj(fp, sp, 0);
@@ -623,10 +613,11 @@ static void print_def_overall_excluded(FILE* fp, int sp) {
 
 /* Output JSON overall referrers definition block. */
 static void print_def_overall_refs(FILE* fp, int sp) {
-  GDefMetric def = {
-      .lbl = T_REFERRER,
-      .datatype = "numeric",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+  def.lbl = T_REFERRER;
+  def.datatype = "numeric";
+
   fpopen_obj_attr(fp, OVERALL_REF, sp);
   print_def_metric(fp, def, sp);
   fpclose_obj(fp, sp, 0);
@@ -634,10 +625,10 @@ static void print_def_overall_refs(FILE* fp, int sp) {
 
 /* Output JSON overall not found definition block. */
 static void print_def_overall_notfound(FILE* fp, int sp) {
-  GDefMetric def = {
-      .lbl = T_UNIQUE404,
-      .datatype = "numeric",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+  def.lbl = T_UNIQUE404;
+  def.datatype = "numeric";
   fpopen_obj_attr(fp, OVERALL_NOTFOUND, sp);
   print_def_metric(fp, def, sp);
   fpclose_obj(fp, sp, 0);
@@ -645,10 +636,11 @@ static void print_def_overall_notfound(FILE* fp, int sp) {
 
 /* Output JSON overall static files definition block. */
 static void print_def_overall_static_files(FILE* fp, int sp) {
-  GDefMetric def = {
-      .lbl = T_STATIC_FILES,
-      .datatype = "numeric",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+
+  def.lbl = T_STATIC_FILES;
+  def.datatype = "numeric";
   fpopen_obj_attr(fp, OVERALL_STATIC, sp);
   print_def_metric(fp, def, sp);
   fpclose_obj(fp, sp, 0);
@@ -656,10 +648,11 @@ static void print_def_overall_static_files(FILE* fp, int sp) {
 
 /* Output JSON log size definition block. */
 static void print_def_overall_log_size(FILE* fp, int sp) {
-  GDefMetric def = {
-      .lbl = T_LOG,
-      .datatype = "bytes",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+
+  def.lbl = T_LOG;
+  def.datatype = "bytes";
   fpopen_obj_attr(fp, OVERALL_LOGSIZE, sp);
   print_def_metric(fp, def, sp);
   fpclose_obj(fp, sp, 0);
@@ -667,10 +660,11 @@ static void print_def_overall_log_size(FILE* fp, int sp) {
 
 /* Output JSON overall bandwidth definition block. */
 static void print_def_overall_bandwidth(FILE* fp, int sp) {
-  GDefMetric def = {
-      .lbl = T_BW,
-      .datatype = "bytes",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+
+  def.lbl = T_BW;
+  def.datatype = "bytes";
   fpopen_obj_attr(fp, OVERALL_BANDWIDTH, sp);
   print_def_metric(fp, def, sp);
   fpclose_obj(fp, sp, 1);
@@ -678,37 +672,40 @@ static void print_def_overall_bandwidth(FILE* fp, int sp) {
 
 /* Output JSON hits definition block. */
 static void print_def_hits(FILE* fp, int sp) {
-  GDefMetric def = {
-      .datakey = "hits",
-      .lbl = MTRC_HITS_LBL,
-      .datatype = "numeric",
-      .metakey = "count",
-      .cwidth = "12%",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+
+  def.datakey = "hits";
+  def.lbl = MTRC_HITS_LBL;
+  def.datatype = "numeric";
+  def.metakey = "count";
+  def.cwidth = "12%";
   print_def_block(fp, def, sp, 0);
 }
 
 /* Output JSON visitors definition block. */
 static void print_def_visitors(FILE* fp, int sp) {
-  GDefMetric def = {
-      .datakey = "visitors",
-      .lbl = MTRC_VISITORS_LBL,
-      .datatype = "numeric",
-      .metakey = "count",
-      .cwidth = "12%",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+
+  def.datakey = "visitors";
+  def.lbl = MTRC_VISITORS_LBL;
+  def.datatype = "numeric";
+  def.metakey = "count";
+  def.cwidth = "12%";
   print_def_block(fp, def, sp, 0);
 }
 
 /* Output JSON bandwidth definition block. */
 static void print_def_bw(FILE* fp, int sp) {
-  GDefMetric def = {
-      .datakey = "bytes",
-      .lbl = MTRC_BW_LBL,
-      .datatype = "bytes",
-      .metakey = "count",
-      .cwidth = "12%",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+
+  def.datakey = "bytes";
+  def.lbl = MTRC_BW_LBL;
+  def.datatype = "bytes";
+  def.metakey = "count";
+  def.cwidth = "12%";
 
   if (!conf.bandwidth)
     return;
@@ -718,13 +715,14 @@ static void print_def_bw(FILE* fp, int sp) {
 
 /* Output JSON Avg. T.S. definition block. */
 static void print_def_avgts(FILE* fp, int sp) {
-  GDefMetric def = {
-      .datakey = "avgts",
-      .lbl = MTRC_AVGTS_LBL,
-      .datatype = "utime",
-      .metakey = "avg",
-      .cwidth = "8%",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+
+  def.datakey = "avgts";
+  def.lbl = MTRC_AVGTS_LBL;
+  def.datatype = "utime";
+  def.metakey = "avg";
+  def.cwidth = "8%";
 
   if (!conf.serve_usecs)
     return;
@@ -734,13 +732,14 @@ static void print_def_avgts(FILE* fp, int sp) {
 
 /* Output JSON Cum. T.S. definition block. */
 static void print_def_cumts(FILE* fp, int sp) {
-  GDefMetric def = {
-      .datakey = "cumts",
-      .lbl = MTRC_CUMTS_LBL,
-      .datatype = "utime",
-      .metakey = "count",
-      .cwidth = "8%",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+
+  def.datakey = "cumts";
+  def.lbl = MTRC_CUMTS_LBL;
+  def.datatype = "utime";
+  def.metakey = "count";
+  def.cwidth = "8%";
 
   if (!conf.serve_usecs)
     return;
@@ -750,13 +749,14 @@ static void print_def_cumts(FILE* fp, int sp) {
 
 /* Output JSON Max. T.S. definition block. */
 static void print_def_maxts(FILE* fp, int sp) {
-  GDefMetric def = {
-      .datakey = "maxts",
-      .lbl = MTRC_MAXTS_LBL,
-      .datatype = "utime",
-      .metakey = "count",
-      .cwidth = "8%",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+
+  def.datakey = "maxts";
+  def.lbl = MTRC_MAXTS_LBL;
+  def.datatype = "utime";
+  def.metakey = "count";
+  def.cwidth = "8%";
 
   if (!conf.serve_usecs)
     return;
@@ -765,18 +765,18 @@ static void print_def_maxts(FILE* fp, int sp) {
 
 /* Output JSON method definition block. */
 static void print_def_method(FILE* fp, int sp) {
-  GDefMetric def = {
-      .datakey = "method",
-      .lbl = MTRC_METHODS_LBL,
-      .datatype = "string",
-      .cwidth = "6%",
-      .hlregex = "{"
-                 "\\\"(\\\\\\\\b[A-Z]{3}\\\\\\\\b)\\\": \\\"<b class='cell-hl b1'>$1</b>\\\","
-                 "\\\"(\\\\\\\\b[A-Z]{4}\\\\\\\\b)\\\": \\\"<b class='cell-hl b2'>$1</b>\\\","
-                 "\\\"(\\\\\\\\b[A-Z]{5,}\\\\\\\\b)\\\": \\\"<b class='cell-hl b3'>$1</b>\\\""
-                 "}",
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
 
-  };
+  def.datakey = "method";
+  def.lbl = MTRC_METHODS_LBL;
+  def.datatype = "string";
+  def.cwidth = "6%";
+  def.hlregex = "{"
+                "\\\"(\\\\\\\\b[A-Z]{3}\\\\\\\\b)\\\": \\\"<b class='cell-hl b1'>$1</b>\\\","
+                "\\\"(\\\\\\\\b[A-Z]{4}\\\\\\\\b)\\\": \\\"<b class='cell-hl b2'>$1</b>\\\","
+                "\\\"(\\\\\\\\b[A-Z]{5,}\\\\\\\\b)\\\": \\\"<b class='cell-hl b3'>$1</b>\\\""
+                "}";
 
   if (!conf.append_method)
     return;
@@ -786,18 +786,18 @@ static void print_def_method(FILE* fp, int sp) {
 
 /* Output JSON protocol definition block. */
 static void print_def_protocol(FILE* fp, int sp) {
-  GDefMetric def = {
-      .datakey = "protocol",
-      .lbl = MTRC_PROTOCOLS_LBL,
-      .datatype = "string",
-      .cwidth = "7%",
-      .hlregex = "{"
-                 "\\\"(\\\\\\\\bHTTP/1.0\\\\\\\\b)\\\": \\\"<b class='cell-hl d1'>$1</b>\\\","
-                 "\\\"(\\\\\\\\bHTTP/1.1\\\\\\\\b)\\\": \\\"<b class='cell-hl d2'>$1</b>\\\","
-                 "\\\"(\\\\\\\\bHTTP/2\\\\\\\\b)\\\": \\\"<b class='cell-hl d3'>$1</b>\\\","
-                 "\\\"(\\\\\\\\bHTTP/3\\\\\\\\b)\\\": \\\"<b class='cell-hl d4'>$1</b>\\\""
-                 "}",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+  def.datakey = "protocol";
+  def.lbl = MTRC_PROTOCOLS_LBL;
+  def.datatype = "string";
+  def.cwidth = "7%";
+  def.hlregex = "{"
+                "\\\"(\\\\\\\\bHTTP/1.0\\\\\\\\b)\\\": \\\"<b class='cell-hl d1'>$1</b>\\\","
+                "\\\"(\\\\\\\\bHTTP/1.1\\\\\\\\b)\\\": \\\"<b class='cell-hl d2'>$1</b>\\\","
+                "\\\"(\\\\\\\\bHTTP/2\\\\\\\\b)\\\": \\\"<b class='cell-hl d3'>$1</b>\\\","
+                "\\\"(\\\\\\\\bHTTP/3\\\\\\\\b)\\\": \\\"<b class='cell-hl d4'>$1</b>\\\""
+                "}";
 
   if (!conf.append_protocol)
     return;
@@ -807,11 +807,11 @@ static void print_def_protocol(FILE* fp, int sp) {
 
 /* Output JSON city definition block. */
 static void print_def_city(FILE* fp, int sp) {
-  GDefMetric def = {
-      .datakey = "city",
-      .lbl = MTRC_CITY_LBL,
-      .datatype = "string",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+  def.datakey = "city";
+  def.lbl = MTRC_CITY_LBL;
+  def.datatype = "string";
 
   if (!conf.has_geocity)
     return;
@@ -821,15 +821,15 @@ static void print_def_city(FILE* fp, int sp) {
 
 /* Output JSON ASN definition block. */
 static void print_def_asn(FILE* fp, int sp) {
-  GDefMetric def = {
-      .datakey = "asn",
-      .lbl = MTRC_ASB_LBL,
-      .datatype = "string",
-      .hlregex = "{"
-                 "\\\"^(\\\\\\\\d+)\\\": \\\"<b>$1</b>\\\","
-                 "\\\"^(AS\\\\\\\\d+)\\\": \\\"<b>$1</b>\\\""
-                 "}",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+  def.datakey = "asn";
+  def.lbl = MTRC_ASB_LBL;
+  def.datatype = "string";
+  def.hlregex = "{"
+                "\\\"^(\\\\\\\\d+)\\\": \\\"<b>$1</b>\\\","
+                "\\\"^(AS\\\\\\\\d+)\\\": \\\"<b>$1</b>\\\""
+                "}";
 
   if (!conf.has_geoasn)
     return;
@@ -839,14 +839,14 @@ static void print_def_asn(FILE* fp, int sp) {
 
 /* Output JSON country definition block. */
 static void print_def_country(FILE* fp, int sp) {
-  GDefMetric def = {
-      .datakey = "country",
-      .lbl = MTRC_COUNTRY_LBL,
-      .datatype = "string",
-      .hlregex = "{"
-                 "\\\"^([A-Z]{2})\\\": \\\"<b class='span-hl g5'>$1</b>\\\""
-                 "}",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+  def.datakey = "country";
+  def.lbl = MTRC_COUNTRY_LBL;
+  def.datatype = "string";
+  def.hlregex = "{"
+                "\\\"^([A-Z]{2})\\\": \\\"<b class='span-hl g5'>$1</b>\\\""
+                "}";
 
   if (!conf.has_geocountry)
     return;
@@ -856,12 +856,13 @@ static void print_def_country(FILE* fp, int sp) {
 
 /* Output JSON hostname definition block. */
 static void print_def_hostname(FILE* fp, int sp) {
-  GDefMetric def = {
-      .datakey = "hostname",
-      .lbl = MTRC_HOSTNAME_LBL,
-      .datatype = "string",
-      .cname = "light",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+
+  def.datakey = "hostname";
+  def.lbl = MTRC_HOSTNAME_LBL;
+  def.datatype = "string";
+  def.cname = "light";
 
   if (!conf.enable_html_resolver)
     return;
@@ -871,24 +872,24 @@ static void print_def_hostname(FILE* fp, int sp) {
 
 /* Output JSON data definition block. */
 static void print_def_data(FILE* fp, GModule module, int sp) {
-  GDefMetric def = {
-      .cname = "trunc",
-      .cwidth = "100%",
-      .datakey = "data",
-      .datatype = module == VISITORS ? "date" : "string",
-      .lbl = MTRC_DATA_LBL,
-      .metakey = "unique",
-      .metalbl = "Total",
-      .metatype = "numeric",
-      .hlregex =
-          "{"
-          "\\\"^(\\\\\\\\d+|\\\\\\\\d+xx)(\\\\\\\\s.*)$\\\": \\\"<b>$1</b>$2\\\","            /* 2xx Success */
-          "\\\"^(AS\\\\\\\\d+)\\\": \\\"<b>$1</b>\\\","                                       /* AS9823 Google */
-          "\\\"^(\\\\\\\\d+:)\\\": \\\"<b>$1</b>\\\","                                        /* 01234: Data */
-          "\\\"(\\\\\\\\d+)|(:\\\\\\\\d+)|(:\\\\\\\\d+:\\\\\\\\d+)\\\": \\\"$1<b>$2</b>\\\"," /* 12/May/2022:12:34 */
-          "\\\"^([A-Z]{2})(\\\\\\\\s.*$)\\\": \\\"<b class='span-hl g5'>$1</b>$2\\\""         /* US United States */
-          "}",
-  };
+  GDefMetric def;
+  ::memset(&def, 0, sizeof(def));
+
+  def.cname = "trunc";
+  def.cwidth = "100%";
+  def.datakey = "data";
+  def.datatype = module == VISITORS ? "date" : "string", def.lbl = MTRC_DATA_LBL;
+  def.metakey = "unique";
+  def.metalbl = "Total";
+  def.metatype = "numeric";
+  def.hlregex =
+      "{"
+      "\\\"^(\\\\\\\\d+|\\\\\\\\d+xx)(\\\\\\\\s.*)$\\\": \\\"<b>$1</b>$2\\\","            /* 2xx Success */
+      "\\\"^(AS\\\\\\\\d+)\\\": \\\"<b>$1</b>\\\","                                       /* AS9823 Google */
+      "\\\"^(\\\\\\\\d+:)\\\": \\\"<b>$1</b>\\\","                                        /* 01234: Data */
+      "\\\"(\\\\\\\\d+)|(:\\\\\\\\d+)|(:\\\\\\\\d+:\\\\\\\\d+)\\\": \\\"$1<b>$2</b>\\\"," /* 12/May/2022:12:34 */
+      "\\\"^([A-Z]{2})(\\\\\\\\s.*$)\\\": \\\"<b class='span-hl g5'>$1</b>$2\\\""         /* US United States */
+      "}";
 
   print_def_block(fp, def, sp, 1);
 }
@@ -1157,7 +1158,7 @@ static void print_json_defs(FILE* fp) {
 
   print_json_def_summary(fp);
   FOREACH_MODULE(idx, module_list) {
-    if ((def = panel_lookup(module_list[idx]))) {
+    if ((def = panel_lookup((GModule)module_list[idx]))) {
       print_json_def(fp, def);
     }
   }
