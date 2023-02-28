@@ -114,24 +114,11 @@ void display_version(void) {
   fprintf(stdout, "%s: %s\n", INFO_MORE_INFO, GO_WEBSITE);
   fprintf(stdout, "Copyright (C) 2009-2022 by Gerardo Orellana\n");
   fprintf(stdout, "\nBuild configure arguments:\n");
-#ifdef DEBUG
   fprintf(stdout, "  --enable-debug\n");
-#endif
-#ifdef HAVE_NCURSESW_NCURSES_H
   fprintf(stdout, "  --enable-utf8\n");
-#endif
-#ifdef HAVE_LIBGEOIP
   fprintf(stdout, "  --enable-geoip=legacy\n");
-#endif
-#ifdef HAVE_LIBMAXMINDDB
-  fprintf(stdout, "  --enable-geoip=mmdb\n");
-#endif
-#ifdef WITH_GETLINE
   fprintf(stdout, "  --with-getline\n");
-#endif
-#ifdef HAVE_LIBSSL
   fprintf(stdout, "  --with-openssl\n");
-#endif
 }
 
 /* Get the enumerated value given a string.
