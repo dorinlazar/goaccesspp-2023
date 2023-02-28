@@ -42,9 +42,8 @@
  *
  * On error, aborts if node can't be malloc'd.
  * On success, the GSLList node. */
-GSLList *
-list_create (void *data) {
-  GSLList *node = xmalloc (sizeof (GSLList));
+GSLList* list_create(void* data) {
+  GSLList* node = cppalloc<GSLList>();
   node->data = data;
   node->next = NULL;
 
@@ -55,10 +54,9 @@ list_create (void *data) {
  *
  * On error, aborts if node can't be malloc'd.
  * On success, the newly created node. */
-GSLList *
-list_insert_append (GSLList * node, void *data) {
-  GSLList *newnode;
-  newnode = list_create (data);
+GSLList* list_insert_append(GSLList* node, void* data) {
+  GSLList* newnode;
+  newnode = list_create(data);
   newnode->next = node->next;
   node->next = newnode;
 
@@ -69,10 +67,9 @@ list_insert_append (GSLList * node, void *data) {
  *
  * On error, aborts if node can't be malloc'd.
  * On success, the newly created node. */
-GSLList *
-list_insert_prepend (GSLList * list, void *data) {
-  GSLList *newnode;
-  newnode = list_create (data);
+GSLList* list_insert_prepend(GSLList* list, void* data) {
+  GSLList* newnode;
+  newnode = list_create(data);
   newnode->next = list;
 
   return newnode;
@@ -82,10 +79,9 @@ list_insert_prepend (GSLList * list, void *data) {
  *
  * If comparison fails, NULL is returned.
  * On success, the existing node is returned. */
-GSLList *
-list_find (GSLList * node, int (*func) (void *, void *), void *data) {
+GSLList* list_find(GSLList* node, int (*func)(void*, void*), void* data) {
   while (node) {
-    if (func (node->data, data) > 0)
+    if (func(node->data, data) > 0)
       return node;
     node = node->next;
   }
@@ -93,15 +89,14 @@ list_find (GSLList * node, int (*func) (void *, void *), void *data) {
   return NULL;
 }
 
-GSLList *
-list_copy (GSLList * node) {
-  GSLList *list = NULL;
+GSLList* list_copy(GSLList* node) {
+  GSLList* list = NULL;
 
   while (node) {
     if (!list)
-      list = list_create (i322ptr ((*(uint32_t *) node->data)));
+      list = list_create(i322ptr((*(uint32_t*)node->data)));
     else
-      list = list_insert_prepend (list, i322ptr ((*(uint32_t *) node->data)));
+      list = list_insert_prepend(list, i322ptr((*(uint32_t*)node->data)));
     node = node->next;
   }
 
@@ -111,14 +106,13 @@ list_copy (GSLList * node) {
 /* Remove all nodes from the list.
  *
  * On success, 0 is returned. */
-int
-list_remove_nodes (GSLList * list) {
-  GSLList *tmp;
+int list_remove_nodes(GSLList* list) {
+  GSLList* tmp;
   while (list != NULL) {
     tmp = list->next;
     if (list->data)
-      free (list->data);
-    free (list);
+      free(list->data);
+    free(list);
     list = tmp;
   }
 
@@ -129,8 +123,7 @@ list_remove_nodes (GSLList * list) {
  *
  * On error, 1 is returned.
  * On success, 0 is returned. */
-int
-list_remove_node (GSLList ** list, GSLList * node) {
+int list_remove_node(GSLList** list, GSLList* node) {
   GSLList **current = list, *next = NULL;
   for (; *current; current = &(*current)->next) {
     if ((*current) != node)
@@ -138,8 +131,8 @@ list_remove_node (GSLList ** list, GSLList * node) {
 
     next = (*current)->next;
     if ((*current)->data)
-      free ((*current)->data);
-    free (*current);
+      free((*current)->data);
+    free(*current);
     *current = next;
     return 0;
   }
@@ -150,10 +143,9 @@ list_remove_node (GSLList ** list, GSLList * node) {
  *
  * If function pointer does not return 0, -1 is returned.
  * On success, 0 is returned. */
-int
-list_foreach (GSLList * node, int (*func) (void *, void *), void *user_data) {
+int list_foreach(GSLList* node, int (*func)(void*, void*), void* user_data) {
   while (node) {
-    if (func (node->data, user_data) != 0)
+    if (func(node->data, user_data) != 0)
       return -1;
     node = node->next;
   }
@@ -164,8 +156,7 @@ list_foreach (GSLList * node, int (*func) (void *, void *), void *user_data) {
 /* Count the number of elements on the linked-list.
  *
  * On success, the number of elements is returned. */
-int
-list_count (GSLList * node) {
+int list_count(GSLList* node) {
   int count = 0;
   while (node != 0) {
     count++;

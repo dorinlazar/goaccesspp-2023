@@ -1,33 +1,3 @@
-/**
- * goaccess.c -- main log analyzer
- *    ______      ___
- *   / ____/___  /   | _____________  __________
- *  / / __/ __ \/ /| |/ ___/ ___/ _ \/ ___/ ___/
- * / /_/ / /_/ / ___ / /__/ /__/  __(__  |__  )
- * \____/\____/_/  |_\___/\___/\___/____/____/
- *
- * The MIT License (MIT)
- * Copyright (c) 2009-2022 Gerardo Orellana <hello @ goaccess.io>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 #define _FILE_OFFSET_BITS 64
@@ -37,10 +7,6 @@
 #include <errno.h>
 
 #include <locale.h>
-
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 #include <fcntl.h>
 #include <grp.h>
@@ -75,12 +41,7 @@
 #include "websocket.h"
 #include "xmalloc.h"
 
-GConf conf = {
-    .append_method = 1,
-    .append_protocol = 1,
-    .hl_header = 1,
-    .num_tests = 10,
-};
+GConf conf;
 
 /* Loading/Spinner */
 GSpinner* parsing_spinner;
@@ -124,9 +85,9 @@ static GScroll gscroll = {
         {0, 0}, /* MIME_TYPE       { scroll, offset} */
         {0, 0}, /* TLS_TYPE        { scroll, offset} */
     },
-    0, /* current module */
-    0, /* main dashboard scroll */
-    0, /* expanded flag */
+    (GModule)0, /* current module */
+    0,          /* main dashboard scroll */
+    0,          /* expanded flag */
 };
 /* *INDENT-ON* */
 
@@ -314,7 +275,7 @@ static void allocate_holder(void) {
   size_t idx = 0;
 
   holder = new_gholder(TOTAL_MODULES);
-  FOREACH_MODULE(idx, module_list) { allocate_holder_by_module(module_list[idx]); }
+  FOREACH_MODULE(idx, module_list) { allocate_holder_by_module((GModule)module_list[idx]); }
 }
 
 /* Extract data from the modules GHolder structure and load it into
@@ -351,14 +312,14 @@ static void allocate_data_by_module(GModule module, int col_data) {
 /* Iterate over all modules/panels and extract data from GHolder
  * structure and load it into the terminal dashboard */
 static void allocate_data(void) {
-  GModule module;
+  int module;
   int col_data = get_num_collapsed_data_rows();
   size_t idx = 0;
 
   dash = new_gdash();
   FOREACH_MODULE(idx, module_list) {
     module = module_list[idx];
-    allocate_data_by_module(module, col_data);
+    allocate_data_by_module((GModule)module, col_data);
   }
 }
 
@@ -473,7 +434,7 @@ static void load_ip_agent_list(void) {
   int type_ip = 0;
   /* make sure we have a valid IP */
   int sel = gscroll.module[gscroll.current].scroll;
-  GDashData item = {0};
+  GDashData item = {nullptr, 0};
 
   if (dash->module[HOSTS].holder_size == 0)
     return;
@@ -835,7 +796,7 @@ out:
 /* Loop over and perform a follow for the given logs */
 static void tail_loop_html(Logs* logs) {
   struct timespec refresh = {
-      .tv_sec = conf.html_refresh ? conf.html_refresh : HTML_REFRESH,
+      .tv_sec = (time_t)(conf.html_refresh ? conf.html_refresh : HTML_REFRESH),
       .tv_nsec = 0,
   };
   int i = 0, ret = 0;
@@ -889,7 +850,7 @@ static int next_module(void) {
   if ((next = get_next_module(gscroll.current)) == -1)
     return 1;
 
-  gscroll.current = next;
+  gscroll.current = (GModule)next;
   if (!conf.no_tab_scroll)
     gscroll.dash = get_module_index(gscroll.current) * DASH_COLLAPSED;
 
@@ -903,7 +864,7 @@ static int previous_module(void) {
   if ((prev = get_prev_module(gscroll.current)) == -1)
     return 1;
 
-  gscroll.current = prev;
+  gscroll.current = (GModule)prev;
   if (!conf.no_tab_scroll)
     gscroll.dash = get_module_index(gscroll.current) * DASH_COLLAPSED;
 
@@ -1239,8 +1200,8 @@ static void set_locale(void) {
   char* loc_ctype;
 
   setlocale(LC_ALL, "");
-  bindtextdomain(PACKAGE, LOCALEDIR);
-  textdomain(PACKAGE);
+  // bindtextdomain("gpaccess", LOCALEDIR);
+  textdomain("gpaccess");
 
   loc_ctype = getenv("LC_CTYPE");
   if (loc_ctype != NULL)
@@ -1385,7 +1346,7 @@ static Logs* initializer(void) {
     drop_permissions();
 
   /* then initialize modules and set */
-  gscroll.current = init_modules();
+  gscroll.current = (GModule)init_modules();
   /* setup to use the current locale */
   set_locale();
 
@@ -1433,7 +1394,7 @@ static char* generate_fifo_name(void) {
   genstr(fname, RAND_FN - 1);
 
   len = snprintf(NULL, 0, "%s/goaccess_fifo_%s", tmp, fname) + 1;
-  path = xmalloc(len);
+  path = cppalloc<char>(len);
   snprintf(path, len, "%s/goaccess_fifo_%s", tmp, fname);
 
   return path;
@@ -1513,6 +1474,12 @@ static void set_curses(Logs* logs, int* quit) {
 
 /* Where all begins... */
 int main(int argc, char** argv) {
+  ::memset(&conf, 0, sizeof(conf));
+  conf.append_method = 1;
+  conf.append_protocol = 1;
+  conf.hl_header = 1;
+  conf.num_tests = 10;
+
   Logs* logs = NULL;
   int quit = 0, ret = 0;
 
