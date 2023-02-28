@@ -1,34 +1,4 @@
-/**
- *    ______      ___
- *   / ____/___  /   | _____________  __________
- *  / / __/ __ \/ /| |/ ___/ ___/ _ \/ ___/ ___/
- * / /_/ / /_/ / ___ / /__/ /__/  __(__  |__  )
- * \____/\____/_/  |_\___/\___/\___/____/____/
- *
- * The MIT License (MIT)
- * Copyright (c) 2009-2022 Gerardo Orellana <hello @ goaccess.io>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-#ifndef UTIL_H_INCLUDED
-#define UTIL_H_INCLUDED
+#pragma once
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -55,7 +25,6 @@
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-/* *INDENT-OFF* */
 #include <stdint.h>
 #include <sys/types.h>
 #include <time.h>
@@ -74,7 +43,7 @@ char *int2str (int d, int width);
 char *left_pad_str (const char *s, int indent);
 char *ltrim (char *s);
 char *regex_extract_string (const char *str, const char *regex, int max_groups, char const **err);
-char *replace_str (const char *str, const char *old, const char *new);
+char *replace_str (const char *str, const char *old, const char *n);
 char *rtrim (char *s);
 char *secs_to_str (int secs);
 char *strtoupper(char *str);
@@ -107,7 +76,3 @@ void genstr(char *dest, size_t len);
 void set_tz (void);
 void strip_newlines (char *str);
 void xstrncpy (char *dest, const char *source, const size_t dest_size);
-
-/* *INDENT-ON* */
-
-#endif
