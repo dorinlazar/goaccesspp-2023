@@ -88,7 +88,6 @@
 #error Platform not supported!
 #endif
 
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #include "gslist.h"
 
 #define WS_BAD_REQUEST_STR "HTTP/1.1 400 Invalid Request\r\n\r\n"

@@ -16,18 +16,18 @@
 
 #include "geoip1.h"
 
-typedef struct GPanel_ {
+struct GPanelLocalHolder {
   GModule module;
-  void (*insert)(GRawDataItem item, GHolder* h, datatype type, const struct GPanel_*);
+  void (*insert)(GRawDataItem item, GHolder* h, datatype type, const struct GPanelLocalHolder*);
   void (*holder_callback)(GHolder* h);
-} GPanel;
+};
 
-static void add_data_to_holder(GRawDataItem item, GHolder* h, datatype type, const GPanel* panel);
-static void add_host_to_holder(GRawDataItem item, GHolder* h, datatype type, const GPanel* panel);
-static void add_root_to_holder(GRawDataItem item, GHolder* h, datatype type, const GPanel* panel);
+static void add_data_to_holder(GRawDataItem item, GHolder* h, datatype type, const GPanelLocalHolder* panel);
+static void add_host_to_holder(GRawDataItem item, GHolder* h, datatype type, const GPanelLocalHolder* panel);
+static void add_root_to_holder(GRawDataItem item, GHolder* h, datatype type, const GPanelLocalHolder* panel);
 static void add_host_child_to_holder(GHolder* h);
 
-static GPanel paneling[] = {
+static GPanelLocalHolder paneling[] = {
     {VISITORS, add_data_to_holder, NULL},
     {REQUESTS, add_data_to_holder, NULL},
     {REQUESTS_STATIC, add_data_to_holder, NULL},
@@ -49,11 +49,11 @@ static GPanel paneling[] = {
     {TLS_TYPE, add_root_to_holder, NULL},
 };
 
-/* Get a panel from the GPanel structure given a module.
+/* Get a panel from the GPanelLocalHolder structure given a module.
  *
  * On error, or if not found, NULL is returned.
  * On success, the panel value is returned. */
-static GPanel* panel_lookup(GModule module) {
+static GPanelLocalHolder* panel_lookup(GModule module) {
   int i, num_panels = ARRAY_SIZE(paneling);
 
   for (i = 0; i < num_panels; i++) {
@@ -423,7 +423,7 @@ static void set_single_metrics(GRawDataItem item, GHolder* h, char* data, uint32
 
 /* Set all panel data. This will set data for panels that do not
  * contain sub items. A function pointer is used for post data set. */
-static void add_data_to_holder(GRawDataItem item, GHolder* h, datatype type, const GPanel* panel) {
+static void add_data_to_holder(GRawDataItem item, GHolder* h, datatype type, const GPanelLocalHolder* panel) {
   char* data = NULL;
   uint32_t hits = 0;
 
@@ -438,7 +438,7 @@ static void add_data_to_holder(GRawDataItem item, GHolder* h, datatype type, con
 }
 
 /* A wrapper to set a host item */
-static void set_host(GRawDataItem item, GHolder* h, const GPanel* panel, char* data, uint32_t hits) {
+static void set_host(GRawDataItem item, GHolder* h, const GPanelLocalHolder* panel, char* data, uint32_t hits) {
   set_single_metrics(item, h, xstrdup(data), hits);
   if (panel->holder_callback)
     panel->holder_callback(h);
@@ -447,7 +447,7 @@ static void set_host(GRawDataItem item, GHolder* h, const GPanel* panel, char* d
 
 /* Set all panel data. This will set data for panels that do not
  * contain sub items. A function pointer is used for post data set. */
-static void add_host_to_holder(GRawDataItem item, GHolder* h, datatype type, const GPanel* panel) {
+static void add_host_to_holder(GRawDataItem item, GHolder* h, datatype type, const GPanelLocalHolder* panel) {
   char buf4[INET_ADDRSTRLEN];
   char buf6[INET6_ADDRSTRLEN];
   char* data = NULL;
@@ -532,7 +532,7 @@ static int set_root_metrics(GRawDataItem item, GModule module, datatype type, GM
 }
 
 /* Set all root panel data, including sub list items. */
-static void add_root_to_holder(GRawDataItem item, GHolder* h, datatype type, GO_UNUSED const GPanel* panel) {
+static void add_root_to_holder(GRawDataItem item, GHolder* h, datatype type, GO_UNUSED const GPanelLocalHolder* panel) {
   GSubList* sub_list;
   GMetrics *metrics, *nmetrics;
   char* root = NULL;
@@ -583,7 +583,7 @@ static void add_root_to_holder(GRawDataItem item, GHolder* h, datatype type, GO_
 void load_holder_data(GRawData* raw_data, GHolder* h, GModule module, GSort sort) {
   int i;
   uint32_t size = 0, max_choices = get_max_choices();
-  const GPanel* panel = panel_lookup(module);
+  const GPanelLocalHolder* panel = panel_lookup(module);
 
 #ifdef _DEBUG
   clock_t begin = clock();

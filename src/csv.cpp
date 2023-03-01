@@ -19,10 +19,10 @@
 struct tm now_tm;
 
 /* Panel output */
-typedef struct GPanel_ {
+struct GPanel {
   GModule module;
   void (*render)(FILE* fp, GHolder* h, GPercTotals totals);
-} GPanel;
+};
 
 static void print_csv_data(FILE* fp, GHolder* h, GPercTotals totals);
 

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <ctype.h>
 #include <errno.h>
 
@@ -841,7 +842,7 @@ static int parse_specifier(GLogItem* logitem, char** str, const char* p, const c
     if ((fmtspcs = count_matches(dfmt, ' ')) && (pch = strchr(*str, ' ')))
       dspc = find_alpha_count(pch);
 
-    if (!(tkn = parse_string(&(*str), end, MAX(dspc, fmtspcs) + 1)))
+    if (!(tkn = parse_string(&(*str), end, std::max(dspc, fmtspcs) + 1)))
       return spec_err(logitem, ERR_SPEC_TOKN_NUL, *p, NULL);
 
     if (str_to_time(tkn, dfmt, &tm, 1) != 0 || set_date(&logitem->date, tm) != 0) {
@@ -1621,7 +1622,7 @@ static int is_likely_same_log(GLog* glog, const GLastParse* lp) {
     return 1;
 
   /* Must be a LOG */
-  size = MIN(glog->snippetlen, lp->snippetlen);
+  size = std::min(glog->snippetlen, lp->snippetlen);
   if (glog->snippet[0] != '\0' && lp->snippet[0] != '\0' && memcmp(glog->snippet, lp->snippet, size) == 0)
     return 1;
 
@@ -1970,7 +1971,7 @@ int set_initial_persisted_data(GLog* glog, FILE* fp, const char* fn) {
   if (glog->size == 0)
     return 1;
 
-  len = MIN(glog->size, READ_BYTES);
+  len = std::min((size_t)glog->size, (size_t)READ_BYTES);
   if ((fread(glog->snippet, len, 1, fp)) != 1 && ferror(fp))
     FATAL("Unable to fread the specified log file '%s'", fn);
   glog->snippetlen = len;

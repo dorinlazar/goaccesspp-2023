@@ -1,3 +1,4 @@
+#include <algorithm>
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 #include <ctype.h>
@@ -569,7 +570,7 @@ static int set_date_num_format(void) {
   }
 
   flen = strlen(fdate) + 1;
-  flen = MAX(MIN_DATENUM_FMT_LEN, flen); /* at least %Y%m%d + 1 */
+  flen = std::max(MIN_DATENUM_FMT_LEN, flen); /* at least %Y%m%d + 1 */
   buf = cppalloc<char>(flen);
 
   /* always add a %Y */

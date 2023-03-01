@@ -39,46 +39,42 @@
 #include "xmalloc.h"
 
 /* Self-checking wrapper to malloc() */
-void *
-xmalloc (size_t size) {
-  void *ptr;
+void* xmalloc(size_t size) {
+  void* ptr;
 
-  if ((ptr = malloc (size)) == NULL)
-    FATAL ("Unable to allocate memory - failed.");
+  if ((ptr = malloc(size)) == NULL)
+    FATAL("Unable to allocate memory - failed.");
 
   return (ptr);
 }
 
-char *
-xstrdup (const char *s) {
-  char *ptr;
+char* xstrdup(const char* s) {
+  char* ptr;
   size_t len;
 
-  len = strlen (s) + 1;
-  ptr = xmalloc (len);
+  len = strlen(s) + 1;
+  ptr = (char*)xmalloc(len);
 
-  strncpy (ptr, s, len);
+  strncpy(ptr, s, len);
   return (ptr);
 }
 
 /* Self-checking wrapper to calloc() */
-void *
-xcalloc (size_t nmemb, size_t size) {
-  void *ptr;
+void* xcalloc(size_t nmemb, size_t size) {
+  void* ptr;
 
-  if ((ptr = calloc (nmemb, size)) == NULL)
-    FATAL ("Unable to calloc memory - failed.");
+  if ((ptr = calloc(nmemb, size)) == NULL)
+    FATAL("Unable to calloc memory - failed.");
 
   return (ptr);
 }
 
 /* Self-checking wrapper to realloc() */
-void *
-xrealloc (void *oldptr, size_t size) {
-  void *newptr;
+void* xrealloc(void* oldptr, size_t size) {
+  void* newptr;
 
-  if ((newptr = realloc (oldptr, size)) == NULL)
-    FATAL ("Unable to reallocate memory - failed");
+  if ((newptr = realloc(oldptr, size)) == NULL)
+    FATAL("Unable to reallocate memory - failed");
 
   return (newptr);
 }

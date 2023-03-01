@@ -725,7 +725,7 @@ static int shutdown_ssl(WSClient* client) {
     /* FALLTHRU */
   case SSL_ERROR_ZERO_RETURN:
   case SSL_ERROR_WANT_X509_LOOKUP:
-  default: return ws_set_status(client, WS_ERR | WS_CLOSE, 1);
+  default: return ws_set_status(client, (WSStatus)(WS_ERR | WS_CLOSE), 1);
   }
 
   return ret;
@@ -741,7 +741,7 @@ static int accept_ssl(WSClient* client) {
 
   /* all good on TLS handshake */
   if ((ret = SSL_accept(client->ssl)) > 0) {
-    client->sslstatus &= ~WS_TLS_ACCEPTING;
+    client->sslstatus = (WSStatus)(client->sslstatus & ~WS_TLS_ACCEPTING);
     return 0;
   }
 
@@ -763,7 +763,9 @@ static int accept_ssl(WSClient* client) {
     /* FALLTHRU */
   case SSL_ERROR_ZERO_RETURN:
   case SSL_ERROR_WANT_X509_LOOKUP:
-  default: client->sslstatus &= ~WS_TLS_ACCEPTING; return ws_set_status(client, WS_ERR | WS_CLOSE, 1);
+  default:
+    client->sslstatus = (WSStatus)(client->sslstatus & ~WS_TLS_ACCEPTING);
+    return ws_set_status(client, (WSStatus)(WS_ERR | WS_CLOSE), 1);
   }
 
   return ret;
@@ -849,7 +851,7 @@ static int send_ssl_buffer(WSClient* client, const char* buffer, int len) {
     /* FALLTHRU */
   case SSL_ERROR_ZERO_RETURN:
   case SSL_ERROR_WANT_X509_LOOKUP:
-  default: return ws_set_status(client, WS_ERR | WS_CLOSE, -1);
+  default: return ws_set_status(client, (WSStatus)(WS_ERR | WS_CLOSE), -1);
   }
 
   return bytes;
@@ -886,7 +888,7 @@ static int read_ssl_socket(WSClient* client, char* buffer, int size) {
       /* FALLTHRU */
     case SSL_ERROR_ZERO_RETURN:
     case SSL_ERROR_WANT_X509_LOOKUP:
-    default: return ws_set_status(client, WS_ERR | WS_CLOSE, -1);
+    default: return ws_set_status(client, (WSStatus)(WS_ERR | WS_CLOSE), -1);
     }
   } while (SSL_pending(client->ssl) && !done);
 
@@ -2048,7 +2050,7 @@ static void handle_accept(int listener, WSServer* server) {
 
   /* set flag to do TLS handshake */
   if (wsconfig.use_ssl)
-    client->sslstatus |= WS_TLS_ACCEPTING;
+    client->sslstatus = (WSStatus)(client->sslstatus | WS_TLS_ACCEPTING);
 
   LOG(("Accepted: %d [%s]\n", newfd, client->remote_ip));
 }
@@ -2065,7 +2067,7 @@ static void handle_reads(int* conn, WSServer* server) {
   if (handle_ssl_pending_rw(conn, server, client) == 0)
     return;
 
-  client->start_proc = client->end_proc = (struct timeval){0};
+  client->start_proc = client->end_proc = (struct timeval){0, 0};
   gettimeofday(&client->start_proc, NULL);
   read_client_data(client, server);
   /* An error occurred while reading data or connection closed */

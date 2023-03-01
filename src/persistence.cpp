@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -219,7 +220,7 @@ static int insert_restored_date(uint32_t date) {
   if (!conf.keep_last || persisted_dates_len < conf.keep_last)
     return ht_insert_date(date);
 
-  len = MIN(persisted_dates_len, conf.keep_last);
+  len = std::min(persisted_dates_len, conf.keep_last);
   for (i = 0; i < len; ++i)
     if (persisted_dates[i] == date)
       return ht_insert_date(date);

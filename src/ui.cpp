@@ -1,3 +1,4 @@
+#include <algorithm>
 #define STDIN_FILENO 0
 #ifndef _BSD_SOURCE
 #define _BSD_SOURCE /* include stuff from 4.3 BSD */
@@ -526,7 +527,7 @@ static char* set_default_string(WINDOW* win, int pos_y, int pos_x, size_t max_wi
     return s;
   }
 
-  len = MIN(max_width, strlen(str));
+  len = std::min(max_width, strlen(str));
   memcpy(s, str, len);
   s[len] = '\0';
 
@@ -650,7 +651,7 @@ char* input_string(WINDOW* win, int pos_y, int pos_x, size_t max_width, const ch
       }
     }
     tmp = xstrdup(&s[pos > 0 ? pos : 0]);
-    tmp[MIN(strlen(tmp), size_x)] = '\0';
+    tmp[std::min(strlen(tmp), size_x)] = '\0';
     for (i = strlen(tmp); i < size_x; i++)
       mvwprintw(win, pos_y, pos_x + i, "%s", " ");
     mvwprintw(win, pos_y, pos_x, "%s", tmp);

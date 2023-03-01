@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
@@ -757,7 +758,7 @@ static int perform_tail_follow(GLog* glog) {
 
   verify_inode(fp, glog);
 
-  len = MIN(glog->snippetlen, length);
+  len = std::min(glog->snippetlen, (uint16_t)length);
   /* This is not ideal, but maybe the only reliable way to know if the
    * current log looks different than our first read/parse */
   if ((fread(buf, len, 1, fp)) != 1 && ferror(fp))
