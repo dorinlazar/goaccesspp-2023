@@ -532,7 +532,7 @@ static int set_root_metrics(GRawDataItem item, GModule module, datatype type, GM
 }
 
 /* Set all root panel data, including sub list items. */
-static void add_root_to_holder(GRawDataItem item, GHolder* h, datatype type, GO_UNUSED const GPanelLocalHolder* panel) {
+static void add_root_to_holder(GRawDataItem item, GHolder* h, datatype type, [[maybe_unused]] const GPanelLocalHolder* panel) {
   GSubList* sub_list;
   GMetrics *metrics, *nmetrics;
   char* root = NULL;

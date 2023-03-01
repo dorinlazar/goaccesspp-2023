@@ -514,7 +514,7 @@ void geoip_asn(char* host, char* asn) {
  *
  * On error, 1 is returned
  * On success, buffers are set and 0 is returned */
-int set_geolocation(char* host, char* continent, char* country, char* city, GO_UNUSED char* asn) {
+int set_geolocation(char* host, char* continent, char* country, char* city, [[maybe_unused]] char* asn) {
   int type_ip = 0;
 
   if (!is_geoip_resource())

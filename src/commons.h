@@ -9,7 +9,6 @@
 #if !__GNUC__
 #define __attribute__(x) /**/
 #endif
-#define GO_UNUSED __attribute__((unused))
 #define GO_VERSION "1.7"
 #define GO_WEBSITE "https://goaccess.io/"
 extern struct tm now_tm;
@@ -47,10 +46,10 @@ extern struct tm now_tm;
 #define IGNORE_LEVEL_REQ 2
 
 /* Type of IP */
-typedef enum { TYPE_IPINV, TYPE_IPV4, TYPE_IPV6 } GTypeIP;
+enum GTypeIP { TYPE_IPINV, TYPE_IPV4, TYPE_IPV6 };
 
 /* Type of Modules */
-typedef enum MODULES {
+enum GModule {
   VISITORS,
   REQUESTS,
   REQUESTS_STATIC,
@@ -70,13 +69,13 @@ typedef enum MODULES {
   ASN,
   MIME_TYPE,
   TLS_TYPE,
-} GModule;
+};
 
 /* Total number of storage metrics (GSMetric) */
 #define GSMTRC_TOTAL 19
 
 /* Enumerated Storage Metrics */
-typedef enum GSMetric_ {
+enum GSMetric {
   MTRC_KEYMAP,
   MTRC_ROOTMAP,
   MTRC_DATAMAP,
@@ -96,18 +95,18 @@ typedef enum GSMetric_ {
   MTRC_AGENT_VALS,
   MTRC_CNT_VALID,
   MTRC_CNT_BW,
-} GSMetric;
+};
 
 /* Metric totals. These are metrics that have a percent value and are
  * calculated values. */
-typedef struct GPercTotals_ {
+struct GPercTotals {
   uint32_t hits;     /* total valid hits */
   uint32_t visitors; /* total visitors */
   uint64_t bw;       /* total bandwidth */
-} GPercTotals;
+};
 
 /* Metrics within GHolder or GDashData */
-typedef struct GMetrics {
+struct GMetrics {
   /* metric id can be used to identify
    * a specific data field */
   uint8_t id;
@@ -149,22 +148,22 @@ typedef struct GMetrics {
     char* sts;
     uint64_t nts;
   } maxts;
-} GMetrics;
+};
 
 /* Holder sub item */
-typedef struct GSubItem_ {
+struct GSubItem {
   GModule module;
   GMetrics* metrics;
-  struct GSubItem_* prev;
-  struct GSubItem_* next;
-} GSubItem;
+  GSubItem* prev;
+  GSubItem* next;
+};
 
 /* Double linked-list of sub items */
-typedef struct GSubList_ {
+struct GSubList {
   int size;
-  struct GSubItem_* head;
-  struct GSubItem_* tail;
-} GSubList;
+  GSubItem* head;
+  GSubItem* tail;
+};
 
 /* Holder item */
 typedef struct GHolderItem_ {

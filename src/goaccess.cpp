@@ -1296,7 +1296,7 @@ static void parse_cmd_line(int argc, char** argv) {
   set_default_static_files();
 }
 
-static void handle_signal_action(GO_UNUSED int sig_number) {
+static void handle_signal_action([[maybe_unused]] int sig_number) {
   fprintf(stderr, "\nSIGINT caught!\n");
   fprintf(stderr, "Closing GoAccess...\n");
 

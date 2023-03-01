@@ -356,7 +356,7 @@ int ht_insert_cumts(GModule module, uint32_t date, uint32_t key, uint64_t inc, u
 int ht_insert_datamap(GModule module, uint32_t date, uint32_t key, const char* value, uint32_t ckey);
 int ht_insert_date(uint32_t key);
 int ht_insert_hostname(const char* ip, const char* host);
-int ht_insert_json_logfmt(GO_UNUSED void* userdata, char* key, char* spec);
+int ht_insert_json_logfmt([[maybe_unused]] void* userdata, char* key, char* spec);
 int ht_insert_last_parse(uint64_t key, GLastParse lp);
 int ht_insert_maxts(GModule module, uint32_t date, uint32_t key, uint64_t value, uint32_t ckey);
 int ht_insert_meta_data(GModule module, uint32_t date, const char* key, uint64_t value);

@@ -1,11 +1,5 @@
 #include <algorithm>
 #define STDIN_FILENO 0
-#ifndef _BSD_SOURCE
-#define _BSD_SOURCE /* include stuff from 4.3 BSD */
-#endif
-#ifndef _DEFAULT_SOURCE
-#define _DEFAULT_SOURCE
-#endif
 
 #include <pthread.h>
 #include <ctype.h>
