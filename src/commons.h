@@ -5,10 +5,6 @@
 #include <stdint.h>
 #include "gslist.h"
 
-/* Remove the __attribute__ stuff when the compiler is not GCC. */
-#if !__GNUC__
-#define __attribute__(x) /**/
-#endif
 #define GO_VERSION "1.7"
 #define GO_WEBSITE "https://goaccess.io/"
 extern struct tm now_tm;

@@ -7,12 +7,14 @@
 #include "color.h"
 
 #include "error.h"
-#include "gslist.h"
 #include "util.h"
 #include "xmalloc.h"
 
-static GSLList* color_list = NULL;
-static GSLList* pair_list = NULL;
+#include <list>
+
+// For the time being we'll keep using pointers like they do it in C.
+static std::list<GColors*> color_list;
+static std::list<GColorPair*> pair_list;
 
 static GEnum CSTM_COLORS[] = {
     {"COLOR_MTRC_HITS", COLOR_MTRC_HITS},
@@ -271,12 +273,8 @@ static GColorPair* new_gcolorpair(void) {
 
 /* Free malloc'd memory for color elements */
 void free_color_lists(void) {
-  if (pair_list)
-    list_remove_nodes(pair_list);
-  if (color_list)
-    list_remove_nodes(color_list);
-  color_list = NULL;
-  pair_list = NULL;
+  pair_list.clear();
+  color_list.clear();
 }
 
 /* Set a default color - COLOR_NORMAL, this will be used if
@@ -292,8 +290,8 @@ void set_normal_color(void) {
   color->pair = pair;
   color->item = COLOR_NORMAL;
 
-  pair_list = list_create(pair);
-  color_list = list_create(color);
+  pair_list.push_back(pair);
+  color_list.push_back(color);
 
   init_pair(pair->idx, pair->fg, pair->bg);
 }
