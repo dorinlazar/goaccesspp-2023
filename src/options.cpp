@@ -143,10 +143,8 @@ struct option long_opts[] = {{"agent-list", no_argument, 0, 'a'},
                              {"tz", required_argument, 0, 0},
                              {"unknowns-as-crawlers", no_argument, 0, 0},
                              {"user-name", required_argument, 0, 0},
-#ifdef HAVE_LIBSSL
                              {"ssl-cert", required_argument, 0, 0},
                              {"ssl-key", required_argument, 0, 0},
-#endif
                              {"time-format", required_argument, 0, 0},
                              {"ws-url", required_argument, 0, 0},
                              {"ping-interval", required_argument, 0, 0},
