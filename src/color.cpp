@@ -296,36 +296,6 @@ void set_normal_color(void) {
   init_pair(pair->idx, pair->fg, pair->bg);
 }
 
-/* Get color properties for COLOR_OVERALL_LBLS */
-GColors* color_overall_lbls(void) { return get_color(COLOR_OVERALL_LBLS); }
-
-/* Get color properties for COLOR_OVERALL_VALS */
-GColors* color_overall_vals(void) { return get_color(COLOR_OVERALL_VALS); }
-
-/* Get color properties for COLOR_OVERALL_PATH */
-GColors* color_overall_path(void) { return get_color(COLOR_OVERALL_PATH); }
-
-/* Get color properties for COLOR_PANEL_HEADER */
-GColors* color_panel_header(void) { return get_color(COLOR_PANEL_HEADER); }
-
-/* Get color properties for COLOR_PANEL_DESC */
-GColors* color_panel_desc(void) { return get_color(COLOR_PANEL_DESC); }
-
-/* Get color properties for COLOR_PANEL_ACTIVE*/
-GColors* color_panel_active(void) { return get_color(COLOR_PANEL_ACTIVE); }
-
-/* Get color properties for COLOR_SELECTED */
-GColors* color_selected(void) { return get_color(COLOR_SELECTED); }
-
-/* Get color properties for COLOR_PROGRESS */
-GColors* color_progress(void) { return get_color(COLOR_PROGRESS); }
-
-/* Get color properties for COLOR_DEFAULT */
-GColors* color_default(void) { return get_color(COLOR_DEFAULT); }
-
-/* Get color properties for COLOR_ERROR */
-GColors* color_error(void) { return get_color(COLOR_ERROR); }
-
 /* Get the enumerated color given its equivalent color string.
  *
  * On error, -1 is returned.
@@ -359,6 +329,9 @@ static int extract_color(char* color) {
  *
  * On error, 1 is returned.
  * On success, 0 is returned. */
+
+#define COLOR_STR_LEN 9
+
 static int parse_bg_fg_color(GColorPair* pair, const char* value) {
   char bgcolor[COLOR_STR_LEN] = "", fgcolor[COLOR_STR_LEN] = "";
   int ret = 0;
@@ -698,3 +671,15 @@ void set_colors(int force) {
   else
     add_default_colors();
 }
+
+GPColors GPColorTheme::color_overall_lbls() const { return m_colors[ColorRole::COLOR_OVERALL_LBLS]; }
+GPColors GPColorTheme::color_overall_vals() const { return m_colors[ColorRole::COLOR_OVERALL_VALS]; }
+GPColors GPColorTheme::color_overall_path() const { return m_colors[ColorRole::COLOR_OVERALL_PATH]; }
+GPColors GPColorTheme::color_panel_header() const { return m_colors[ColorRole::COLOR_PANEL_HEADER]; }
+GPColors GPColorTheme::color_panel_desc() const { return m_colors[ColorRole::COLOR_PANEL_DESC]; }
+GPColors GPColorTheme::color_panel_active() const { return m_colors[ColorRole::COLOR_PANEL_ACTIVE]; }
+GPColors GPColorTheme::color_selected() const { return m_colors[ColorRole::COLOR_SELECTED]; }
+GPColors GPColorTheme::color_progress() const { return m_colors[ColorRole::COLOR_PROGRESS]; }
+GPColors GPColorTheme::color_default() const { return m_colors[ColorRole::COLOR_DEFAULT]; }
+GPColors GPColorTheme::color_error() const { return m_colors[ColorRole::COLOR_ERROR]; }
+GPColorTheme::GPColorTheme() {}

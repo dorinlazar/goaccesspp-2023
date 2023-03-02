@@ -1,41 +1,11 @@
-/**
- *    ______      ___
- *   / ____/___  /   | _____________  __________
- *  / / __/ __ \/ /| |/ ___/ ___/ _ \/ ___/ ___/
- * / /_/ / /_/ / ___ / /__/ /__/  __(__  |__  )
- * \____/\____/_/  |_\___/\___/\___/____/____/
- *
- * The MIT License (MIT)
- * Copyright (c) 2009-2022 Gerardo Orellana <hello @ goaccess.io>
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+#pragma once
+#include <utility>
+#include <array>
+#include "kltools/klflags.h"
+#include "commons.h"
 
-#ifndef COLOR_H_INCLUDED
-#define COLOR_H_INCLUDED
-
-#define COLOR_STR_LEN 9
-
-/* Color Items/Fields */
-typedef enum CSTM_COLORS {
-  COLOR_NORMAL,
-  COLOR_MTRC_HITS,
+enum class PanelColorRole {
+  COLOR_MTRC_HITS = 0,
   COLOR_MTRC_VISITORS,
   COLOR_MTRC_DATA,
   COLOR_MTRC_BW,
@@ -48,6 +18,12 @@ typedef enum CSTM_COLORS {
   COLOR_MTRC_HITS_PERC_MAX,
   COLOR_MTRC_VISITORS_PERC,
   COLOR_MTRC_VISITORS_PERC_MAX,
+  MAX_PANEL_COLOR_ROLES
+};
+
+/* Color Items/Fields */
+enum class ColorRole {
+  COLOR_NORMAL,
   COLOR_PANEL_COLS,
   COLOR_BARS,
   COLOR_ERROR,
@@ -62,7 +38,8 @@ typedef enum CSTM_COLORS {
   COLOR_BG,
   COLOR_DEFAULT,
   COLOR_PROGRESS,
-} GColorItem;
+  MAX_COLOR_ROLES
+};
 
 /* Default Color Schemes */
 typedef enum SCHEMES {
@@ -72,53 +49,54 @@ typedef enum SCHEMES {
   MONOKAI,
 } GShemes;
 
-#include "commons.h"
+// /* Each color properties */
+// typedef struct GColorPair_ {
+//   short idx; /* color pair index identifier */
+//   short fg;  /* foreground color */
+//   short bg;  /* background color */
+// } GColorPair;
 
-/* Each color properties */
-typedef struct GColorPair_ {
-  short idx; /* color pair index identifier */
-  short fg;  /* foreground color */
-  short bg;  /* background color */
-} GColorPair;
+// /* Color */
+// typedef struct GColors_ {
+//   GColorItem item;  /* screen item */
+//   GColorPair* pair; /* color pair */
+//   int attr;         /* color attributes, e.g., bold */
+//   short module;     /* panel */
+// } GColors;
 
-/* Color */
-typedef struct GColors_ {
-  GColorItem item;  /* screen item */
-  GColorPair* pair; /* color pair */
-  int attr;         /* color attributes, e.g., bold */
-  short module;     /* panel */
-} GColors;
+// void free_color_lists(void);
+// void set_colors(int force);
+// void set_normal_color(void);
 
-GColors* color_default(void);
-GColors* color_error(void);
-GColors* color_overall_lbls(void);
-GColors* color_overall_path(void);
-GColors* color_overall_vals(void);
-GColors* color_panel_active(void);
-GColors* color_panel_desc(void);
-GColors* color_panel_header(void);
-GColors* color_progress(void);
-GColors* color_selected(void);
-GColors* get_color_by_item_module(GColorItem item, GModule module);
-GColors* get_color(GColorItem item);
-GColors* get_color_normal(void);
-void free_color_lists(void);
-void set_colors(int force);
-void set_normal_color(void);
+enum class CellAttributes { Bold, Underline, Standout, Blink };
 
-struct GPColorPair {
+struct GPColor {
+  KLFlags<CellAttributes> attr;
   short fg;
   short bg;
 };
 
-struct GPColor {
-  GPColorPair colors;
-  int attr;
+struct GPColorDefinition {
+  GPColor color;
+  GModule module;
 }
 
-struct GPColors {
-public:
-  static
-};
+class GPColorTheme {
+  std::array<GPColor, std::to_underlying(ColorRole::MAX_COLOR_ROLES)> m_colors;
+  std::array<GPColor, std::to_underlying(PanelColorRole::MAX_PANEL_COLOR_ROLES)> m_default_panel_colors;
 
-#endif // for #ifndef COLOR_H
+public:
+  GPColorTheme();
+  GPColor color_default() const;
+  GPColor color_error() const;
+  GPColor color_overall_lbls() const;
+  GPColor color_overall_path() const;
+  GPColor color_overall_vals() const;
+  GPColor color_panel_active() const;
+  GPColor color_panel_desc() const;
+  GPColor color_panel_header() const;
+  GPColor color_progress() const;
+  GPColor color_selected() const;
+  // GPColors get_color_by_item_module(GPColorItem item, GModule module);
+  // GPColors get_color(GPColorItem item);
+};

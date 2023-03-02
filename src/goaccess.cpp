@@ -327,7 +327,7 @@ static void clean_stdscrn(void) {
 
 /* A wrapper to render all windows within the dashboard. */
 static void render_screens(uint32_t offset) {
-  GColors* color = get_color(COLOR_DEFAULT);
+  GColors* color = color_default();
   int row, col;
   char time_str_buf[32];
 

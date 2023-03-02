@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <functional>
 #define STDIN_FILENO 0
 
 #include <pthread.h>
@@ -47,14 +48,14 @@ static GOutput outputting[] = {
 };
 
 /* Structure to display overall statistics */
-typedef struct Field_ {
+struct Field {
   const char* field;
   /* char due to log, bw, log_file */
   char* value;
-  GColors* (*colorlbl)(void);
-  GColors* (*colorval)(void);
+  GPColors (*colorlbl)(void);
+  GPColors (*colorval)(void);
   short oneliner;
-} Field;
+};
 
 /* Determine which metrics to output given a module
  *
