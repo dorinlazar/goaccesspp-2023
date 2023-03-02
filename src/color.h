@@ -76,34 +76,49 @@ typedef enum SCHEMES {
 
 /* Each color properties */
 typedef struct GColorPair_ {
-  short idx;                    /* color pair index identifier */
-  short fg;                     /* foreground color */
-  short bg;                     /* background color */
+  short idx; /* color pair index identifier */
+  short fg;  /* foreground color */
+  short bg;  /* background color */
 } GColorPair;
 
 /* Color */
 typedef struct GColors_ {
-  GColorItem item;              /* screen item */
-  GColorPair *pair;             /* color pair */
-  int attr;                     /* color attributes, e.g., bold */
-  short module;                 /* panel */
+  GColorItem item;  /* screen item */
+  GColorPair* pair; /* color pair */
+  int attr;         /* color attributes, e.g., bold */
+  short module;     /* panel */
 } GColors;
 
-GColors *color_default (void);
-GColors *color_error (void);
-GColors *color_overall_lbls (void);
-GColors *color_overall_path (void);
-GColors *color_overall_vals (void);
-GColors *color_panel_active (void);
-GColors *color_panel_desc (void);
-GColors *color_panel_header (void);
-GColors *color_progress (void);
-GColors *color_selected (void);
-GColors *get_color_by_item_module (GColorItem item, GModule module);
-GColors *get_color (GColorItem item);
-GColors *get_color_normal (void);
-void free_color_lists (void);
-void set_colors (int force);
-void set_normal_color (void);
+GColors* color_default(void);
+GColors* color_error(void);
+GColors* color_overall_lbls(void);
+GColors* color_overall_path(void);
+GColors* color_overall_vals(void);
+GColors* color_panel_active(void);
+GColors* color_panel_desc(void);
+GColors* color_panel_header(void);
+GColors* color_progress(void);
+GColors* color_selected(void);
+GColors* get_color_by_item_module(GColorItem item, GModule module);
+GColors* get_color(GColorItem item);
+GColors* get_color_normal(void);
+void free_color_lists(void);
+void set_colors(int force);
+void set_normal_color(void);
+
+struct GPColorPair {
+  short fg;
+  short bg;
+};
+
+struct GPColor {
+  GPColorPair colors;
+  int attr;
+}
+
+struct GPColors {
+public:
+  static
+};
 
 #endif // for #ifndef COLOR_H
