@@ -14,7 +14,7 @@
 #include "error.h"
 #include "gkhash.h"
 #include "settings.h"
-#include "ui.h"
+#include "ui/ui.h"
 #include "util.h"
 #include "websocket.h"
 #include "xmalloc.h"

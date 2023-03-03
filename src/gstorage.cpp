@@ -12,7 +12,7 @@
 #include "error.h"
 #include "gkhash.h"
 #include "opesys.h"
-#include "ui.h"
+#include "ui/ui.h"
 #include "util.h"
 #include "xmalloc.h"
 

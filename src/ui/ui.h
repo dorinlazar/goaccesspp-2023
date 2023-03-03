@@ -111,7 +111,7 @@
 #define ERR_WIN_HEIGHT 15
 #define ERR_WIN_WIDTH 71
 
-#include "color.h"
+#include "ui/color.h"
 #include "commons.h"
 #include "sort.h"
 

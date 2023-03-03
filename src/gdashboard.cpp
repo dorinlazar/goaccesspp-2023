@@ -11,7 +11,7 @@
 
 #include "gkhash.h"
 #include "gholder.h"
-#include "color.h"
+#include "ui/color.h"
 #include "error.h"
 #include "gstorage.h"
 #include "util.h"

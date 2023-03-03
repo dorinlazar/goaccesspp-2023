@@ -14,9 +14,9 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "ui.h"
+#include "ui/ui.h"
 
-#include "color.h"
+#include "ui/color.h"
 #include "error.h"
 #include "gkhash.h"
 #include "gmenu.h"

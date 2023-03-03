@@ -1,5 +1,5 @@
 #pragma once
-#include "ui.h"
+#include "ui/ui.h"
 
 #define RAND_FN 7 + 1
 
