@@ -1,52 +1,47 @@
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-
 #include "color.h"
 
-#include "error.h"
-#include "util.h"
-#include "xmalloc.h"
+#include <vector>
+#include <string_view>
+#include <array>
 
-#include <list>
+static std::vector<GPColorDefinition> color_list;
 
-// For the time being we'll keep using pointers like they do it in C.
-static std::list<GColors*> color_list;
-static std::list<GColorPair*> pair_list;
-
-static GEnum CSTM_COLORS[] = {
-    {"COLOR_MTRC_HITS", COLOR_MTRC_HITS},
-    {"COLOR_MTRC_VISITORS", COLOR_MTRC_VISITORS},
-    {"COLOR_MTRC_HITS_PERC", COLOR_MTRC_HITS_PERC},
-    {"COLOR_MTRC_VISITORS_PERC", COLOR_MTRC_VISITORS_PERC},
-    {"COLOR_MTRC_BW", COLOR_MTRC_BW},
-    {"COLOR_MTRC_AVGTS", COLOR_MTRC_AVGTS},
-    {"COLOR_MTRC_CUMTS", COLOR_MTRC_CUMTS},
-    {"COLOR_MTRC_MAXTS", COLOR_MTRC_MAXTS},
-    {"COLOR_MTRC_PROT", COLOR_MTRC_PROT},
-    {"COLOR_MTRC_MTHD", COLOR_MTRC_MTHD},
-    {"COLOR_MTRC_DATA", COLOR_MTRC_DATA},
-    {"COLOR_MTRC_HITS_PERC_MAX", COLOR_MTRC_HITS_PERC_MAX},
-    {"COLOR_MTRC_VISITORS_PERC_MAX", COLOR_MTRC_VISITORS_PERC_MAX},
-    {"COLOR_PANEL_COLS", COLOR_PANEL_COLS},
-    {"COLOR_BARS", COLOR_BARS},
-    {"COLOR_ERROR", COLOR_ERROR},
-    {"COLOR_SELECTED", COLOR_SELECTED},
-    {"COLOR_PANEL_ACTIVE", COLOR_PANEL_ACTIVE},
-    {"COLOR_PANEL_HEADER", COLOR_PANEL_HEADER},
-    {"COLOR_PANEL_DESC", COLOR_PANEL_DESC},
-    {"COLOR_OVERALL_LBLS", COLOR_OVERALL_LBLS},
-    {"COLOR_OVERALL_VALS", COLOR_OVERALL_VALS},
-    {"COLOR_OVERALL_PATH", COLOR_OVERALL_PATH},
-    {"COLOR_ACTIVE_LABEL", COLOR_ACTIVE_LABEL},
-    {"COLOR_BG", COLOR_BG},
-    {"COLOR_DEFAULT", COLOR_DEFAULT},
-    {"COLOR_PROGRESS", COLOR_PROGRESS},
+struct ColorRoleNameMapping {
+  std::string_view name;
+  ColorRole role;
 };
 
-static const char* colors256_mono[] = {
+static std::array<ColorRoleNameMapping> CSTM_COLORS{
+    {"COLOR_MTRC_HITS", ColorRole::COLOR_MTRC_HITS},
+    {"COLOR_MTRC_VISITORS", ColorRole::COLOR_MTRC_VISITORS},
+    {"COLOR_MTRC_HITS_PERC", ColorRole::COLOR_MTRC_HITS_PERC},
+    {"COLOR_MTRC_VISITORS_PERC", ColorRole::COLOR_MTRC_VISITORS_PERC},
+    {"COLOR_MTRC_BW", ColorRole::COLOR_MTRC_BW},
+    {"COLOR_MTRC_AVGTS", ColorRole::COLOR_MTRC_AVGTS},
+    {"COLOR_MTRC_CUMTS", ColorRole::COLOR_MTRC_CUMTS},
+    {"COLOR_MTRC_MAXTS", ColorRole::COLOR_MTRC_MAXTS},
+    {"COLOR_MTRC_PROT", ColorRole::COLOR_MTRC_PROT},
+    {"COLOR_MTRC_MTHD", ColorRole::COLOR_MTRC_MTHD},
+    {"COLOR_MTRC_DATA", ColorRole::COLOR_MTRC_DATA},
+    {"COLOR_MTRC_HITS_PERC_MAX", ColorRole::COLOR_MTRC_HITS_PERC_MAX},
+    {"COLOR_MTRC_VISITORS_PERC_MAX", ColorRole::COLOR_MTRC_VISITORS_PERC_MAX},
+    {"COLOR_PANEL_COLS", ColorRole::COLOR_PANEL_COLS},
+    {"COLOR_BARS", ColorRole::COLOR_BARS},
+    {"COLOR_ERROR", ColorRole::COLOR_ERROR},
+    {"COLOR_SELECTED", ColorRole::COLOR_SELECTED},
+    {"COLOR_PANEL_ACTIVE", ColorRole::COLOR_PANEL_ACTIVE},
+    {"COLOR_PANEL_HEADER", ColorRole::COLOR_PANEL_HEADER},
+    {"COLOR_PANEL_DESC", ColorRole::COLOR_PANEL_DESC},
+    {"COLOR_OVERALL_LBLS", ColorRole::COLOR_OVERALL_LBLS},
+    {"COLOR_OVERALL_VALS", ColorRole::COLOR_OVERALL_VALS},
+    {"COLOR_OVERALL_PATH", ColorRole::COLOR_OVERALL_PATH},
+    {"COLOR_ACTIVE_LABEL", ColorRole::COLOR_ACTIVE_LABEL},
+    {"COLOR_BG", ColorRole::COLOR_BG},
+    {"COLOR_DEFAULT", ColorRole::COLOR_DEFAULT},
+    {"COLOR_PROGRESS", ColorRole::COLOR_PROGRESS},
+};
+
+static std::array<std::string_view> colors256_mono{
     "COLOR_MTRC_HITS              color7:color-1",
     "COLOR_MTRC_VISITORS          color8:color-1",
     "COLOR_MTRC_DATA              color7:color-1",
@@ -84,7 +79,7 @@ static const char* colors256_mono[] = {
     "COLOR_PROGRESS               color0:color6",
 };
 
-static const char* colors256_green[] = {
+static std::array<std::string_view> colors256_green{
     "COLOR_MTRC_HITS              color7:color-1",
     "COLOR_MTRC_VISITORS          color8:color-1",
     "COLOR_MTRC_DATA              color7:color-1",
@@ -122,7 +117,7 @@ static const char* colors256_green[] = {
     "COLOR_PROGRESS               color0:color6",
 };
 
-static const char* colors256_monokai[] = {
+static std::array<std::string_view> colors256_monokai{
     "COLOR_MTRC_HITS              color197:color-1",
     "COLOR_MTRC_VISITORS          color148:color-1",
     "COLOR_MTRC_DATA              color7:color-1",
@@ -160,7 +155,7 @@ static const char* colors256_monokai[] = {
     "COLOR_PROGRESS               color7:color141",
 };
 
-static const char* colors8_mono[] = {
+static std::array<std::string_view> colors8_mono{
     "COLOR_MTRC_HITS              color7:color-1",
     "COLOR_MTRC_VISITORS          color0:color-1 bold",
     "COLOR_MTRC_DATA              color7:color-1",
@@ -198,7 +193,7 @@ static const char* colors8_mono[] = {
     "COLOR_PROGRESS               color0:color6",
 };
 
-static const char* colors8_green[] = {
+static std::array<std::string_view> colors8_green{
     "COLOR_MTRC_HITS              color7:color-1",
     "COLOR_MTRC_VISITORS          color0:color-1 bold",
     "COLOR_MTRC_DATA              color7:color-1",
@@ -236,7 +231,7 @@ static const char* colors8_green[] = {
     "COLOR_PROGRESS               color0:color6",
 };
 
-static const char* nocolors[] = {
+static std::array<std::string_view> nocolors{
     "COLOR_MTRC_HITS              color0:color-1",         "COLOR_MTRC_VISITORS          color0:color-1",
     "COLOR_MTRC_DATA              color0:color-1",         "COLOR_MTRC_BW                color0:color-1",
     "COLOR_MTRC_AVGTS             color0:color-1",         "COLOR_MTRC_CUMTS             color0:color-1",
@@ -252,30 +247,6 @@ static const char* nocolors[] = {
     "COLOR_BG                     color0:color-1",         "COLOR_DEFAULT                color0:color-1",
     "COLOR_PROGRESS               color0:color-1 reverse",
 };
-
-/* Allocate memory for color elements */
-static GColors* new_gcolors(void) {
-  GColors* color = cppalloc<GColors>();
-  color->module = -1;
-
-  return color;
-}
-
-/* Allocate memory for a color element properties */
-static GColorPair* new_gcolorpair(void) {
-  GColorPair* pair = cppalloc<GColorPair>();
-  /* Must be between 2 and COLOR_PAIRS-1.
-   * Starts at 2 since COLOR_NORMAL has already been set */
-  pair->idx = 2;
-
-  return pair;
-}
-
-/* Free malloc'd memory for color elements */
-void free_color_lists(void) {
-  pair_list.clear();
-  color_list.clear();
-}
 
 /* Set a default color - COLOR_NORMAL, this will be used if
  * no colors are supported by the terminal */
