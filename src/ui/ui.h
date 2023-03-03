@@ -146,7 +146,7 @@ enum SpinnerState { SPN_RUN, SPN_END };
 /* Spinner or Progress Indicator */
 typedef struct GSpinner_ {
   const char* label;
-  GPColor (*color)(void);
+  GColors* (*color)(void);
   int curses;
   int spin_x;
   int w;
@@ -194,7 +194,7 @@ int get_start_end_parsing_dates(char** start, char** end, const char* f);
 int render_confdlg(Logs* logs, GSpinner* spinner);
 void close_win(WINDOW* w);
 void display_general(WINDOW* win, GHolder* h);
-void draw_header(WINDOW* win, const char* s, const char* fmt, int y, int x, int w, GPColor (*func)(void));
+void draw_header(WINDOW* win, const char* s, const char* fmt, int y, int x, int w, GColors* (*func)(void));
 void end_spinner(void);
 void generate_time(void);
 void init_colors(int force);

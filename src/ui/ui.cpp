@@ -52,8 +52,8 @@ struct Field {
   const char* field;
   /* char due to log, bw, log_file */
   char* value;
-  GPColors (*colorlbl)(void);
-  GPColors (*colorval)(void);
+  GColors* (*colorlbl)(void);
+  GColors* (*colorval)(void);
   short oneliner;
 };
 
